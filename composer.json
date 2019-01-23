@@ -1,0 +1,8 @@
+{
+    "name": "jrstnly/gracechurch-libs",
+    "autoload": {
+        "psr-4" : {
+            "GraceChurch\\" : "src"
+        }
+    }
+}
