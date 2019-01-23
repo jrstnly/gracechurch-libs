@@ -1,5 +1,7 @@
 {
     "name": "jrstnly/gracechurch-libs",
+    "type": "library",
+    "description": "Libraries required for Grace Church systems.",
     "autoload": {
         "psr-4" : {
             "GraceChurch\\" : "src"
