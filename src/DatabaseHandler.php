@@ -1,14 +1,14 @@
 <?php
 
 namespace GraceChurch;
+use GraceChurch\DatabaseConnect;
 
 class DatabaseHandler {
   private $conn;
 
   function __construct($db_name) {
-    require_once 'dbConnect.php';
     // opening db connection
-    $db = new dbConnect();
+    $db = new DatabaseConnect;
     $this->conn = $db->connect($db_name);
     $this->conn->set_charset("utf8mb4");
     $this->conn->query("SET collation_connection = utf8mb4_unicode_ci");
