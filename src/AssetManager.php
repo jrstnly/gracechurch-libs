@@ -8,7 +8,7 @@ class AssetManager {
 
 	function __construct() {
 		$this->root = dirname(__FILE__)."/../files/";
-		$this->db = new DbHandler("grace");
+		$this->db = new DatabaseHandler("grace");
 	}
 
 	private function uploadFile($filename, $temp, $args = null) {
