@@ -56,6 +56,9 @@ class DatabaseHandler {
 	  return $return;
   }
   public function performQuery($query) {
+    if (!$this->conn->ping()) {
+      $this->connect();
+    }
     return $this->conn->query($query) or die($this->conn->error.__LINE__);
   }
   public function insertID() {
