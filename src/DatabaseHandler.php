@@ -3,27 +3,36 @@
 namespace GraceChurch;
 
 class DatabaseHandler {
-  private $conn;
+  private $conn, $database;
 
   function __construct($db_name) {
     // opening db connection
-    $this->conn = $this->connect($db_name);
-    $this->conn->set_charset("utf8mb4");
-    $this->conn->query("SET collation_connection = utf8mb4_unicode_ci");
+    $this->database = $db_name;
+    $this->connect();
   }
 
-  function connect($db_name) {
-      // Connecting to mysql database
-      $conn = new \mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, $db_name);
-      // Check for database connection error
-      if (mysqli_connect_errno()) {
-          echo "Failed to connect to MySQL: " . mysqli_connect_error();
-      }
-      // returing connection resource
-      return $conn;
+  public function connect() {
+    // Connecting to mysql database
+    $this->conn = new \mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, $this->database);
+    // Check for database connection error
+    if ($this->conn->connect_errno) {
+      echo "Failed to connect to MySQL: " . $this->conn->connect_error;
+    } else {
+      // Set Collation and Character set
+      $this->conn->set_charset("utf8mb4");
+      $this->conn->query("SET collation_connection = utf8mb4_unicode_ci");
+    }
+  }
+  public function disconnect() {
+    $this->conn->close();
+  }
+  public function reconnect() {
+    $this->disconnect();
+    $this->connect();
   }
 
 	public function sanitize($input) {
+    //if (!$this->conn->ping()) $this->reconnect();
 		return $this->conn->real_escape_string($input);
 	}
 
@@ -32,6 +41,7 @@ class DatabaseHandler {
     return $result = $r->fetch_assoc();
   }
   public function getRecords($query) {
+    if (!$this->conn->ping()) $this->reconnect();
 		$return = array();
     $r = $this->conn->query($query) or die($this->conn->error.__LINE__);
     while ($result = $r->fetch_assoc()) {
@@ -56,9 +66,7 @@ class DatabaseHandler {
 	  return $return;
   }
   public function performQuery($query) {
-    if (!$this->conn->ping()) {
-      $this->connect();
-    }
+    //if (!$this->conn->ping()) $this->reconnect();
     return $this->conn->query($query) or die($this->conn->error.__LINE__);
   }
   public function insertID() {
