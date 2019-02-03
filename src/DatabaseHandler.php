@@ -32,7 +32,7 @@ class DatabaseHandler {
   }
 
 	public function sanitize($input) {
-    //if (!$this->conn->ping()) $this->reconnect();
+    if (!$this->conn->ping()) $this->reconnect();
 		return $this->conn->real_escape_string($input);
 	}
 
@@ -66,7 +66,7 @@ class DatabaseHandler {
 	  return $return;
   }
   public function performQuery($query) {
-    //if (!$this->conn->ping()) $this->reconnect();
+    if (!$this->conn->ping()) $this->reconnect();
     return $this->conn->query($query) or die($this->conn->error.__LINE__);
   }
   public function insertID() {
