@@ -37,6 +37,7 @@ class DatabaseHandler {
 	}
 
 	public function getOneRecord($query) {
+    if (!$this->conn->ping()) $this->reconnect();
     $r = $this->conn->query($query.' LIMIT 1') or die($this->conn->error.__LINE__);
     return $result = $r->fetch_assoc();
   }
@@ -50,6 +51,7 @@ class DatabaseHandler {
 	  return $return;
   }
   public function getNameValueRecords($query) {
+    if (!$this->conn->ping()) $this->reconnect();
 		$return = array();
     $r = $this->conn->query($query) or die($this->conn->error.__LINE__);
     while ($result = $r->fetch_assoc()) {
@@ -58,6 +60,7 @@ class DatabaseHandler {
 	  return $return;
   }
   public function getRecordsWithPermission($query) {
+    if (!$this->conn->ping()) $this->reconnect();
 		$return = array();
     $r = $this->conn->query($query) or die($this->conn->error.__LINE__);
     while ($result = $r->fetch_assoc()) {
@@ -76,6 +79,7 @@ class DatabaseHandler {
   * Creating new record
   */
   public function insertIntoTable($obj, $column_names, $table_name) {
+    if (!$this->conn->ping()) $this->reconnect();
     $c = (array) $obj;
     $keys = array_keys($c);
     $columns = '';
