@@ -53,7 +53,7 @@ class AssetManager {
 		}
 	}
 	private function generateAccessKey($fid) {
-		$key = generateRandomString(30);
+		$key = $this->generateRandomString(30);
 		$data = array(
 			'id'=>uniqid(),
 			'access_key'=>$key,
@@ -136,6 +136,16 @@ class AssetManager {
 		}
 
 		return $this->uploadFile($filename, $temp, $args);
+	}
+
+	function generateRandomString($length = 32) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+                $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
 	}
 
 }
