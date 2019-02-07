@@ -130,7 +130,7 @@ class AssetManager {
 		$type = mime_content_type($temp);
 		$extension = explode("/", $type)[1];
 
-		$filename = generateRandomString().'.'.$extension;
+		$filename = $this->generateRandomString().'.'.$extension;
 		if (is_array($args)) {
 			if (array_key_exists('filename', $args)) { $filename = $args['filename']; }
 		}
