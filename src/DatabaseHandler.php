@@ -6,13 +6,13 @@ class DatabaseHandler {
   private $conn, $database;
 
   function __construct($db_name) {
-    // opening db connection
+    // Open database connection
     $this->database = $db_name;
     $this->connect();
   }
 
   public function connect() {
-    // Connecting to mysql database
+    // Connect to mysql database
     $this->conn = new \mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, $this->database);
     // Check for database connection error
     if ($this->conn->connect_errno) {
