@@ -1,0 +1,96 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "8ac83538bbd4d9749a27ea3a57d9e980",
+    "packages": [
+        {
+            "name": "robgridley/zebra",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/robgridley/zebra.git",
+                "reference": "19fbb0f7c30caa5a74cf014a544c6e7d0e9d1c1c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/robgridley/zebra/zipball/19fbb0f7c30caa5a74cf014a544c6e7d0e9d1c1c",
+                "reference": "19fbb0f7c30caa5a74cf014a544c6e7d0e9d1c1c",
+                "shasum": ""
+            },
+            "require": {
+                "ext-gd": "*",
+                "php": ">=5.5.9"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Zebra\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Rob Gridley",
+                    "email": "me@robgridley.com"
+                }
+            ],
+            "description": "PHP ZPL builder, image conversion and a basic client for network-connected Zebra label printers.",
+            "keywords": [
+                "image",
+                "zebra",
+                "zpl"
+            ],
+            "time": "2017-03-13T16:12:30+00:00"
+        },
+        {
+            "name": "weez/zpl",
+            "version": "0.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/teddy-dubal/weez-zpl.git",
+                "reference": "56aaf00568342ec669e40e98a6f358fca49730b8"
+            },
+            "require": {
+                "robgridley/zebra": "^1.0"
+            },
+            "require-dev": {
+                "fzaninotto/faker": "* v1.6.0",
+                "mockery/mockery": "^0.9.5",
+                "phpspec/phpspec": "^2.5",
+                "phpunit/phpunit": "^5.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "tests": "",
+                    "Weez": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Teddy Dona",
+                    "email": "teddy.dona@gmail.com"
+                }
+            ],
+            "description": "Description of project weez-zpl.",
+            "time": "2016-07-18T22:25:21+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

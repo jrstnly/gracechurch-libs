@@ -5,10 +5,12 @@ namespace GraceChurch;
 class AssetManager {
 	private $db;
 	private $root;
+	private $tools;
 
 	function __construct() {
-		$this->root = dirname(__FILE__)."/../files/";
+		$this->root = substr(dirname(__FILE__), 0, strpos(dirname(__FILE__), "gracechurch-")) . "../files/";
 		$this->db = new DatabaseHandler("grace");
+		$this->tools = new Tools();
 	}
 
 	private function uploadFile($filename, $temp, $args = null) {
@@ -45,6 +47,7 @@ class AssetManager {
 		}
 		unlink($temp);
 	}
+
 	private function getByLocation($location) {
 		if ($result = $this->db->getRecords("SELECT id FROM asset_files WHERE file = '$location'")) {
 			return $result[0]["id"];
@@ -52,8 +55,9 @@ class AssetManager {
 			return false;
 		}
 	}
+
 	private function generateAccessKey($fid) {
-		$key = $this->generateRandomString(30);
+		$key = $this->tools->generateRandomString(30);
 		$data = array(
 			'id'=>uniqid(),
 			'access_key'=>$key,
@@ -65,7 +69,6 @@ class AssetManager {
 		$result = $this->db->insertIntoTable($data, $column_names, $table_name);
 		return $key;
 	}
-
 
 	public function register($filename, $file, $type, $parent = '0') {
 		$id = uniqid();
@@ -82,6 +85,7 @@ class AssetManager {
 		$result = $this->db->insertIntoTable($data, $column_names, $table_name);
 		return $id;
 	}
+
 	public function upload($filename, $temp, $args = null) {
 		if ($fid = $this->uploadFile($filename, $temp, $args)) {
 			$status = array('status' => 'success', 'access_key' => $this->getAccessKey($fid), 'filename' => $filename);
@@ -91,6 +95,7 @@ class AssetManager {
 			return json_encode($status);
 		}
 	}
+
 	public function getAccessKey($fid) {
 		if ($result = $this->db->getRecords("SELECT access_key FROM asset_access_keys WHERE asset_id = '$fid' LIMIT 1")) {
 			return $result[0]["access_key"];
@@ -98,6 +103,7 @@ class AssetManager {
 			return $this->generateAccessKey($fid);
 		}
 	}
+
 	public function getFile($fid) {
 		$filename = $this->db->getOneRecord("SELECT file FROM asset_files WHERE id = '$fid'");
 		$file = $this->root.$filename['file'];
@@ -130,22 +136,12 @@ class AssetManager {
 		$type = mime_content_type($temp);
 		$extension = explode("/", $type)[1];
 
-		$filename = $this->generateRandomString().'.'.$extension;
+		$filename = $this->tools->generateRandomString().'.'.$extension;
 		if (is_array($args)) {
 			if (array_key_exists('filename', $args)) { $filename = $args['filename']; }
 		}
 
 		return $this->uploadFile($filename, $temp, $args);
-	}
-
-	function generateRandomString($length = 32) {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-                $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
 	}
 
 }
