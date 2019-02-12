@@ -28,8 +28,8 @@ class Tag {
 	}
 	public function printer($address, $backup = false) {
 		$return = array("status"=>"");
-    try {
-      $this->client = new ZebraPrinter($address);
+		try {
+			$this->client = new ZebraPrinter($address);
 			$status = $this->checkStatus();
 			if ($status['paused'] == '1' && $status['paper_out'] == '0' && $status['head_open'] == '0') {
 				if ($backup) {
@@ -61,21 +61,21 @@ class Tag {
 			} else {
 				$return["status"] = "success";
 			}
-    } catch (ZebraCommunicationException $e) {
-      try {
-        if ($backup) {
-    			$this->client = new ZebraPrinter($backup);
+		} catch (ZebraCommunicationException $e) {
+			try {
+				if ($backup) {
+					$this->client = new ZebraPrinter($backup);
 					$return["status"] = "success";
-          $return["message"] = "Unable to contact primary printer. Job sent to backup printer.";
-    		} else {
+					$return["message"] = "Unable to contact primary printer. Job sent to backup printer.";
+				} else {
 					$return["status"] = "success";
 					$return["message"] = "Unable to contact primary printer and no backup defined. Please contact the system administrator for assistance.";
-        }
-      } catch (ZebraCommunicationException $e) {
+				}
+			} catch (ZebraCommunicationException $e) {
 				$return["status"] = "success";
 				$return["message"] = "Unable to contact primary and backup printers. Please contact the system administrator for assistance.";
-      }
-    }
+			}
+		}
 		return $return;
 	}
 	public function send() {

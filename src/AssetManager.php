@@ -76,7 +76,7 @@ class AssetManager {
 			'id'=>$id,
 			'filename'=>$filename,
 			'file'=>$file,
-		  'parent'=>$parent,
+			'parent'=>$parent,
 			'type'=>$type,
 			'registered'=>date("Y-m-d H:i:s")
 		);
@@ -145,9 +145,5 @@ class AssetManager {
 	}
 
 }
-
-
-
-
 
 ?>

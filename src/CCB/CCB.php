@@ -177,7 +177,7 @@ class CCB {
 		foreach($header_data as $part) {
 			if (trim($part) != "") {
 				if (strpos($part, ':') !== false) {
-	    		$middle = explode(":",$part);
+					$middle = explode(":",$part);
 					$name = trim($middle[0]);
 					$value = trim($middle[1]);
 				} else {
@@ -405,290 +405,290 @@ class CCB {
 
 	/*********************** OTHER FUNCTIONS **********************/
 	public function get_image($path, $filename) {
-	  $image = explode('/', $path);
-	  if (end($image) != 'profile-default.gif') {
-	    return $this->am->downloadFromRemoteServer($path, [
-	      'parent'=>'596d8e7746570',
-	      'allowed_file_types'=>['jpeg','jpg','png','gif'],
-	      'filename'=>$filename
-	    ]);
-	  } else {
-	    return '';
-	  }
+		$image = explode('/', $path);
+		if (end($image) != 'profile-default.gif') {
+			return $this->am->downloadFromRemoteServer($path, [
+				'parent'=>'596d8e7746570',
+				'allowed_file_types'=>['jpeg','jpg','png','gif'],
+				'filename'=>$filename
+			]);
+		} else {
+			return '';
+		}
 	}
 
 	public function get_phone($type, $arr) {
-	  $number = "";
-	  if (isset($arr['phones']) && isset($arr['phones']['phone'])) {
-	    $phones = $arr['phones']['phone'];
-	    foreach ($phones as $phone) {
-	      if ($phone['attributes']['type'] == $type) {
-	        $number = preg_replace('/[^0-9,]|,[0-9]*$/','',$phone['value']);
-	      }
-	    }
-	  }
-	  return $number;
+		$number = "";
+		if (isset($arr['phones']) && isset($arr['phones']['phone'])) {
+			$phones = $arr['phones']['phone'];
+			foreach ($phones as $phone) {
+				if ($phone['attributes']['type'] == $type) {
+					$number = preg_replace('/[^0-9,]|,[0-9]*$/','',$phone['value']);
+				}
+			}
+		}
+		return $number;
 	}
 
 	public function get_phone_number($type, $phones) {
-	  $number = "";
-	  if (isset($phones)) {
-	    foreach ($phones as $phone) {
-	      if ($phone->attributes()->type == $type && isset($phone[0])) {
-	        $number = preg_replace('/[^0-9,]|,[0-9]*$/','',$phone[0]);
-	      }
-	    }
-	  }
-	  return $number;
+		$number = "";
+		if (isset($phones)) {
+			foreach ($phones as $phone) {
+				if ($phone->attributes()->type == $type && isset($phone[0])) {
+					$number = preg_replace('/[^0-9,]|,[0-9]*$/','',$phone[0]);
+				}
+			}
+		}
+		return $number;
 	}
 
 	public function get_group_info($gid) {
-	  $group = $this->db->getOneRecord("SELECT * FROM ccb_groups WHERE ID = '$gid'");
-	  return $group;
+		$group = $this->db->getOneRecord("SELECT * FROM ccb_groups WHERE ID = '$gid'");
+		return $group;
 	}
 
 	public function get_individual_group_membership($individual, $include_adminstrative = false, $include_inactive = false) {
-	  $groups = $this->db->getRecords("SELECT `GroupID` FROM `ccb_group_participants` WHERE `Individual` = '$individual'");
-	  $groupsQuery = "SELECT * FROM `ccb_groups` WHERE ";
-	  $groupsQuery .= ($include_adminstrative) ? "" : "`InteractionType` != 'Administrative' AND ";
-	  $groupsQuery .= ($include_inactive) ? "" : "`Inactive` = '0' AND ";
+		$groups = $this->db->getRecords("SELECT `GroupID` FROM `ccb_group_participants` WHERE `Individual` = '$individual'");
+		$groupsQuery = "SELECT * FROM `ccb_groups` WHERE ";
+		$groupsQuery .= ($include_adminstrative) ? "" : "`InteractionType` != 'Administrative' AND ";
+		$groupsQuery .= ($include_inactive) ? "" : "`Inactive` = '0' AND ";
 
-	  $groupsQuery .= "(";
-	  foreach ($groups as $key => $group) {
-	    $groupsQuery .= "`ID` = '".$group['GroupID']."'";
-	    if ($key < (count($groups) - 1)) $groupsQuery .= " OR ";
-	  }
-	  $groupsQuery .= ")";
+		$groupsQuery .= "(";
+		foreach ($groups as $key => $group) {
+			$groupsQuery .= "`ID` = '".$group['GroupID']."'";
+			if ($key < (count($groups) - 1)) $groupsQuery .= " OR ";
+		}
+		$groupsQuery .= ")";
 
-	  return $$this->db->getRecords($groupsQuery);
+		return $$this->db->getRecords($groupsQuery);
 	}
 
 	public function handle_queue_management($id, $queue) {
-	  $this->format('ARR');
-	  if (is_array($queue)) {
-	    if (isset($queue['Queue'])) {
-	      if (isset($queue['Note'])) {
-	        $this->add_individual_to_queue($id, $queue['Queue'], $queue['Note']);
-	      } else {
-	        $this->add_individual_to_queue($id, $queue['Queue']);
-	      }
-	    } else {
-	      foreach ($queue as $key => $value) {
-	        if (isset($value['Queue'])) {
-	          if (isset($value['Note'])) {
-	            $this->add_individual_to_queue($id, $value['Queue'], $value['Note']);
-	          } else {
-	            $this->add_individual_to_queue($id, $value['Queue']);
-	          }
-	        } else {
-	          $this->add_individual_to_queue($id, $value);
-	        }
-	      }
-	    }
-	  } else {
-	    $this->add_individual_to_queue($id, $queue);
-	  }
+		$this->format('ARR');
+		if (is_array($queue)) {
+			if (isset($queue['Queue'])) {
+				if (isset($queue['Note'])) {
+					$this->add_individual_to_queue($id, $queue['Queue'], $queue['Note']);
+				} else {
+					$this->add_individual_to_queue($id, $queue['Queue']);
+				}
+			} else {
+				foreach ($queue as $key => $value) {
+					if (isset($value['Queue'])) {
+						if (isset($value['Note'])) {
+							$this->add_individual_to_queue($id, $value['Queue'], $value['Note']);
+						} else {
+							$this->add_individual_to_queue($id, $value['Queue']);
+						}
+					} else {
+						$this->add_individual_to_queue($id, $value);
+					}
+				}
+			}
+		} else {
+			$this->add_individual_to_queue($id, $queue);
+		}
 	}
 
 	public function migrate_data($old, $new) {
-	  /*** Attendance Records ***/
-	  $this->db->performQuery("UPDATE `ccb_attendance` SET `Individual` = '$new' WHERE `Individual` = '$old'");
-	  /*** MyFit Assessments ***/
-	  $this->db->performQuery("UPDATE `ccb_my_fit_submissions` SET `Individual` = '$new' WHERE `Individual` = '$old'");
+		/*** Attendance Records ***/
+		$this->db->performQuery("UPDATE `ccb_attendance` SET `Individual` = '$new' WHERE `Individual` = '$old'");
+		/*** MyFit Assessments ***/
+		$this->db->performQuery("UPDATE `ccb_my_fit_submissions` SET `Individual` = '$new' WHERE `Individual` = '$old'");
 	}
 
 	public function remove_individual($id) {
-	  $record = $this->db->getOneRecord("SELECT * FROM ccb_individuals WHERE ID = '$id'");
-	  if ($record['ID'] == $id) {
-	    return $this->db->performQuery("DELETE FROM ccb_individuals WHERE ID = '$id'");
-	  } else {
-	    return false;
-	  }
+		$record = $this->db->getOneRecord("SELECT * FROM ccb_individuals WHERE ID = '$id'");
+		if ($record['ID'] == $id) {
+			return $this->db->performQuery("DELETE FROM ccb_individuals WHERE ID = '$id'");
+		} else {
+			return false;
+		}
 	}
 
 	public function insert_update_individual($i, $id) {
-	  $active = ($i['active'] == 'true') ? 1 : 0;
-	  $creator = $i['creator']['attributes']['id'];
-	  $modifier = $i['modifier']['attributes']['id'];
-	  $created = date_create_from_format("U", strtotime($i['created']));
-	  $modified = date_create_from_format("U", strtotime($i['modified']));
-	  $first_name = $this->db->sanitize($i['first_name']);
-	  $last_name = $this->db->sanitize($i['last_name']);
-	  $middle_name = $this->db->sanitize($i['middle_name']);
-	  $legal_first_name = $this->db->sanitize($i['legal_first_name']);
-	  $salutation = $this->db->sanitize($i['salutation']);
-	  $suffix = $this->db->sanitize($i['suffix']);
-	  $gender = $this->db->sanitize($i['gender']);
-	  $birthday = $this->db->sanitize($i['birthday']);
-	  $marital_status = $this->db->sanitize($i['marital_status']);
-	  $anniversary = $this->db->sanitize($i['anniversary']);
-	  $baptized = ($i['baptized'] == 'true') ? 1 : 0;
-	  $image = get_image($i['image'], preg_replace("/[^[:alnum:][:space:]]/u", '', $first_name).'_'.preg_replace("/[^[:alnum:][:space:]]/u", '', $last_name));
-	  $email = $this->db->sanitize($i['email']);
-	  $campus = $this->db->sanitize($i['campus']['attributes']['id']);
-	  $family = $this->db->sanitize($i['family']['attributes']['id']);
-	  $family_position = $this->db->sanitize($i['family_position']);
-	  $deceased = ($i['deceased'] == 'true') ? 1 : 0;
-	  $membership_type = ($i['membership_type']['attributes']['id'] != "") ? $this->db->sanitize($i['membership_type']['attributes']['id']) : '0';
-	  $membership_date = $this->db->sanitize($i['membership_date']);
-	  $membership_end = '';
-	  $allergies = $this->db->sanitize($i['allergies']);
-	  $confirmed_no_allergies = ($i['confirmed_no_allergies'] == 'true') ? 1 : 0;
-	  $emergency_contact_name = $this->db->sanitize($i['emergency_contact_name']);
-	  $receive_email_from_church = ($i['receive_email_from_church'] == 'true') ? 1 : 0;
-	  $login = $this->db->sanitize($i['login']);
-	  $limited_access_user = ($i['limited_access_user'] == 'true') ? 1 : 0;
-	  $home_phone = $this->db->sanitize(get_phone('home', $i));
-	  $mobile_phone = $this->db->sanitize(get_phone('mobile', $i));
-	  $work_phone = $this->db->sanitize(get_phone('work', $i));
-	  $street_address = $this->db->sanitize($i['addresses']['address'][0]['street_address']);
-	  $city = $this->db->sanitize($i['addresses']['address'][0]['city']);
-	  $state = $this->db->sanitize($i['addresses']['address'][0]['state']);
-	  $zip = $this->db->sanitize($i['addresses']['address'][0]['zip']);
-	  $country = $this->db->sanitize($i['addresses']['address'][0]['country']['attributes']['code']);
-	  $lat = ($i['addresses']['address'][0]['latitude'] != '') ? $this->db->sanitize($i['addresses']['address'][0]['latitude']) : '0.000000';
-	  $lng = ($i['addresses']['address'][0]['longitude'] != '') ? $this->db->sanitize($i['addresses']['address'][0]['longitude']) : '0.000000';
+		$active = ($i['active'] == 'true') ? 1 : 0;
+		$creator = $i['creator']['attributes']['id'];
+		$modifier = $i['modifier']['attributes']['id'];
+		$created = date_create_from_format("U", strtotime($i['created']));
+		$modified = date_create_from_format("U", strtotime($i['modified']));
+		$first_name = $this->db->sanitize($i['first_name']);
+		$last_name = $this->db->sanitize($i['last_name']);
+		$middle_name = $this->db->sanitize($i['middle_name']);
+		$legal_first_name = $this->db->sanitize($i['legal_first_name']);
+		$salutation = $this->db->sanitize($i['salutation']);
+		$suffix = $this->db->sanitize($i['suffix']);
+		$gender = $this->db->sanitize($i['gender']);
+		$birthday = $this->db->sanitize($i['birthday']);
+		$marital_status = $this->db->sanitize($i['marital_status']);
+		$anniversary = $this->db->sanitize($i['anniversary']);
+		$baptized = ($i['baptized'] == 'true') ? 1 : 0;
+		$image = get_image($i['image'], preg_replace("/[^[:alnum:][:space:]]/u", '', $first_name).'_'.preg_replace("/[^[:alnum:][:space:]]/u", '', $last_name));
+		$email = $this->db->sanitize($i['email']);
+		$campus = $this->db->sanitize($i['campus']['attributes']['id']);
+		$family = $this->db->sanitize($i['family']['attributes']['id']);
+		$family_position = $this->db->sanitize($i['family_position']);
+		$deceased = ($i['deceased'] == 'true') ? 1 : 0;
+		$membership_type = ($i['membership_type']['attributes']['id'] != "") ? $this->db->sanitize($i['membership_type']['attributes']['id']) : '0';
+		$membership_date = $this->db->sanitize($i['membership_date']);
+		$membership_end = '';
+		$allergies = $this->db->sanitize($i['allergies']);
+		$confirmed_no_allergies = ($i['confirmed_no_allergies'] == 'true') ? 1 : 0;
+		$emergency_contact_name = $this->db->sanitize($i['emergency_contact_name']);
+		$receive_email_from_church = ($i['receive_email_from_church'] == 'true') ? 1 : 0;
+		$login = $this->db->sanitize($i['login']);
+		$limited_access_user = ($i['limited_access_user'] == 'true') ? 1 : 0;
+		$home_phone = $this->db->sanitize(get_phone('home', $i));
+		$mobile_phone = $this->db->sanitize(get_phone('mobile', $i));
+		$work_phone = $this->db->sanitize(get_phone('work', $i));
+		$street_address = $this->db->sanitize($i['addresses']['address'][0]['street_address']);
+		$city = $this->db->sanitize($i['addresses']['address'][0]['city']);
+		$state = $this->db->sanitize($i['addresses']['address'][0]['state']);
+		$zip = $this->db->sanitize($i['addresses']['address'][0]['zip']);
+		$country = $this->db->sanitize($i['addresses']['address'][0]['country']['attributes']['code']);
+		$lat = ($i['addresses']['address'][0]['latitude'] != '') ? $this->db->sanitize($i['addresses']['address'][0]['latitude']) : '0.000000';
+		$lng = ($i['addresses']['address'][0]['longitude'] != '') ? $this->db->sanitize($i['addresses']['address'][0]['longitude']) : '0.000000';
 
-	  return $this->db->performQuery("INSERT INTO ccb_individuals (ID,Active,Creator,Modifier,Created,Modified,FirstName,LastName,MiddleName,LegalFirstName,Salutation,Suffix,Gender,Birthday,MaritalStatus,Anniversary,Baptized,Image,Email,Campus,Family,FamilyPosition,Deceased,MembershipType,MembershipDate,MembershipEnd,Allergies,ConfirmedNoAllergies,EmergencyContactName,ReceiveEmailFromChurch,Login,LimitedAccessUser,HomePhone,MobilePhone,WorkPhone,StreetAddress,City,State,Zip,Country,Longitude,Latitude)
-	    VALUES('$id', '$active', '$creator', '$modifier', '".$created->format('Y-m-d H:i:s')."', '".$modified->format('Y-m-d H:i:s')."', '$first_name', '$last_name', '$middle_name', '$legal_first_name', '$salutation', '$suffix', '$gender', '$birthday', '$marital_status', '$anniversary', '$baptized', '$image', '$email', '$campus', '$family', '$family_position', '$deceased', '$membership_type', '$membership_date', '$membership_end', '$allergies', '$confirmed_no_allergies', '$emergency_contact_name', '$receive_email_from_church', '$login', '$limited_access_user', '$home_phone', '$mobile_phone', '$work_phone', '$street_address', '$city', '$state', '$zip', '$country', '$lng', '$lat')
-	    ON DUPLICATE KEY UPDATE
-	      Active='$active',
-	      Creator='$creator',
-	      Modifier='$modifier',
-	      Modified='".$modified->format('Y-m-d H:i:s')."',
-	      FirstName='$first_name',
-	      LastName='$last_name',
-	      MiddleName='$middle_name',
-	      LegalFirstName='$legal_first_name',
-	      Salutation='$salutation',
-	      Suffix='$suffix',
-	      Gender='$gender',
-	      Birthday='$birthday',
-	      MaritalStatus='$marital_status',
-	      Anniversary='$anniversary',
-	      Baptized='$baptized',
-	      Image='$image',
-	      Email='$email',
-	      Campus='$campus',
-	      Family='$family',
-	      FamilyPosition='$family_position',
-	      Deceased='$deceased',
-	      MembershipType='$membership_type',
-	      MembershipDate='$membership_date',
-	      MembershipEnd='$membership_end',
-	      Allergies='$allergies',
-	      ConfirmedNoAllergies='$confirmed_no_allergies',
-	      EmergencyContactName='$emergency_contact_name',
-	      ReceiveEmailFromChurch='$receive_email_from_church',
-	      Login='$login',
-	      LimitedAccessUser='$limited_access_user',
-	      HomePhone='$home_phone',
-	      MobilePhone='$mobile_phone',
-	      WorkPhone='$work_phone',
-	      StreetAddress='$street_address',
-	      City='$city',
-	      State='$state',
-	      Zip='$zip',
-	      Country='$country',
-	      Latitude='$lat',
-	      Longitude='$lng';");
+		return $this->db->performQuery("INSERT INTO ccb_individuals (ID,Active,Creator,Modifier,Created,Modified,FirstName,LastName,MiddleName,LegalFirstName,Salutation,Suffix,Gender,Birthday,MaritalStatus,Anniversary,Baptized,Image,Email,Campus,Family,FamilyPosition,Deceased,MembershipType,MembershipDate,MembershipEnd,Allergies,ConfirmedNoAllergies,EmergencyContactName,ReceiveEmailFromChurch,Login,LimitedAccessUser,HomePhone,MobilePhone,WorkPhone,StreetAddress,City,State,Zip,Country,Longitude,Latitude)
+			VALUES('$id', '$active', '$creator', '$modifier', '".$created->format('Y-m-d H:i:s')."', '".$modified->format('Y-m-d H:i:s')."', '$first_name', '$last_name', '$middle_name', '$legal_first_name', '$salutation', '$suffix', '$gender', '$birthday', '$marital_status', '$anniversary', '$baptized', '$image', '$email', '$campus', '$family', '$family_position', '$deceased', '$membership_type', '$membership_date', '$membership_end', '$allergies', '$confirmed_no_allergies', '$emergency_contact_name', '$receive_email_from_church', '$login', '$limited_access_user', '$home_phone', '$mobile_phone', '$work_phone', '$street_address', '$city', '$state', '$zip', '$country', '$lng', '$lat')
+			ON DUPLICATE KEY UPDATE
+				Active='$active',
+				Creator='$creator',
+				Modifier='$modifier',
+				Modified='".$modified->format('Y-m-d H:i:s')."',
+				FirstName='$first_name',
+				LastName='$last_name',
+				MiddleName='$middle_name',
+				LegalFirstName='$legal_first_name',
+				Salutation='$salutation',
+				Suffix='$suffix',
+				Gender='$gender',
+				Birthday='$birthday',
+				MaritalStatus='$marital_status',
+				Anniversary='$anniversary',
+				Baptized='$baptized',
+				Image='$image',
+				Email='$email',
+				Campus='$campus',
+				Family='$family',
+				FamilyPosition='$family_position',
+				Deceased='$deceased',
+				MembershipType='$membership_type',
+				MembershipDate='$membership_date',
+				MembershipEnd='$membership_end',
+				Allergies='$allergies',
+				ConfirmedNoAllergies='$confirmed_no_allergies',
+				EmergencyContactName='$emergency_contact_name',
+				ReceiveEmailFromChurch='$receive_email_from_church',
+				Login='$login',
+				LimitedAccessUser='$limited_access_user',
+				HomePhone='$home_phone',
+				MobilePhone='$mobile_phone',
+				WorkPhone='$work_phone',
+				StreetAddress='$street_address',
+				City='$city',
+				State='$state',
+				Zip='$zip',
+				Country='$country',
+				Latitude='$lat',
+				Longitude='$lng';");
 	}
 
 	public function insert_update_event($event) {
-	  $ID = $event['attributes']['id'];
-	  $Name = $this->db->sanitize($event['name']);
-	  $Description = $this->db->sanitize($event['description']);
-	  $Image = ($event['image'] != '') ? $this->am->downloadFromRemoteServer($g['image'], ['parent'=>'5996512398597','allowed_file_types'=>['jpeg','jpg','png','gif'],'filename'=>$this->db->sanitize(preg_replace('/[^A-Za-z0-9\-]/', '', preg_replace('/\s+/', '_', $event['name'])))]) : '';
-	  $LocationName = (is_array($event['location'])) ? $this->db->sanitize($event['location']['name']) : '';
-	  $StreetAddress = (is_array($event['location'])) ? $this->db->sanitize($event['location']['street_address']) : '';
-	  $City = (is_array($event['location'])) ? $this->db->sanitize($event['location']['city']) : '';
-	  $State = (is_array($event['location'])) ? $this->db->sanitize($event['location']['state']) : '';
-	  $Zip = (is_array($event['location'])) ? $this->db->sanitize($event['location']['zip']) : '';
-	  $StartTime = date("Y-m-d H:i:s", strtotime($event['start_datetime']));
-	  $EndTime = date("Y-m-d H:i:s", strtotime($event['end_datetime']));
-	  $SetupStart = date("Y-m-d H:i:s", strtotime($event['setup']['start']));
-	  $SetupEnd = date("Y-m-d H:i:s", strtotime($event['setup']['end']));
-	  $AbsoluteEnd = null;
-	  $Timezone = $event['timezone'];
-	  $Recurrence = $event['recurrence_description'];
-	  $Exceptions = (isset($event['exceptions']['exception'])) ? json_encode($event['exceptions']['exception']) : null;
-	  $Resources = ($event['resources'] == null) ? json_encode($event['resources']) : null;
-	  $GroupID = $event['group']['attributes']['id'];
-	  $Organizer = $event['organizer']['attributes']['id'];
-	  $Grouping = (isset($event['event_grouping']['attributes']['id'])) ? $event['event_grouping']['attributes']['id'] : null;
-	  $Creator = $event['creator']['attributes']['id'];
-	  $Modifier = $event['modifier']['attributes']['id'];
-	  $Created = date("Y-m-d H:i:s", strtotime($event['created']));
-	  $Modified = date("Y-m-d H:i:s", strtotime($event['modified']));
+		$ID = $event['attributes']['id'];
+		$Name = $this->db->sanitize($event['name']);
+		$Description = $this->db->sanitize($event['description']);
+		$Image = ($event['image'] != '') ? $this->am->downloadFromRemoteServer($g['image'], ['parent'=>'5996512398597','allowed_file_types'=>['jpeg','jpg','png','gif'],'filename'=>$this->db->sanitize(preg_replace('/[^A-Za-z0-9\-]/', '', preg_replace('/\s+/', '_', $event['name'])))]) : '';
+		$LocationName = (is_array($event['location'])) ? $this->db->sanitize($event['location']['name']) : '';
+		$StreetAddress = (is_array($event['location'])) ? $this->db->sanitize($event['location']['street_address']) : '';
+		$City = (is_array($event['location'])) ? $this->db->sanitize($event['location']['city']) : '';
+		$State = (is_array($event['location'])) ? $this->db->sanitize($event['location']['state']) : '';
+		$Zip = (is_array($event['location'])) ? $this->db->sanitize($event['location']['zip']) : '';
+		$StartTime = date("Y-m-d H:i:s", strtotime($event['start_datetime']));
+		$EndTime = date("Y-m-d H:i:s", strtotime($event['end_datetime']));
+		$SetupStart = date("Y-m-d H:i:s", strtotime($event['setup']['start']));
+		$SetupEnd = date("Y-m-d H:i:s", strtotime($event['setup']['end']));
+		$AbsoluteEnd = null;
+		$Timezone = $event['timezone'];
+		$Recurrence = $event['recurrence_description'];
+		$Exceptions = (isset($event['exceptions']['exception'])) ? json_encode($event['exceptions']['exception']) : null;
+		$Resources = ($event['resources'] == null) ? json_encode($event['resources']) : null;
+		$GroupID = $event['group']['attributes']['id'];
+		$Organizer = $event['organizer']['attributes']['id'];
+		$Grouping = (isset($event['event_grouping']['attributes']['id'])) ? $event['event_grouping']['attributes']['id'] : null;
+		$Creator = $event['creator']['attributes']['id'];
+		$Modifier = $event['modifier']['attributes']['id'];
+		$Created = date("Y-m-d H:i:s", strtotime($event['created']));
+		$Modified = date("Y-m-d H:i:s", strtotime($event['modified']));
 
-	  if (strpos($Recurrence, "Every") !== false) {
-	    $value = null;
-	    $p1 = strpos($Recurrence, "until");
-	    if($p1 !== false) {
-	      $value = substr($Recurrence, $p1+6);
-	      if (strpos($value, "*ALL DAY*") !== false) {
-	        $s = strpos($value, "and");
-	        $value = substr($value, 0, $s);
-	        $value .= "11:59:59pm";
-	      } else {
-	        $p2 = strpos($value, "from");
-	        $p3 = strpos($value, "to");
-	        $d = $p3 - $p2;
-	        $value = substr_replace($value, "", $p2, $d+3);
-	        if (substr($value, -1) === 'a') $value = substr_replace($value, "am", -1, 1);
-	        elseif (substr($value, -1) === 'p') $value = substr_replace($value, "pm", -1, 1);
-	      }
-	    }
-	    $AbsoluteEnd = ($value != null) ? date("Y-m-d H:i:s", strtotime($value)) : date("Y")+25 . "-01-01 00:00:00";
-	  } else {
-	    $AbsoluteEnd = $EndTime;
-	  }
+		if (strpos($Recurrence, "Every") !== false) {
+			$value = null;
+			$p1 = strpos($Recurrence, "until");
+			if($p1 !== false) {
+				$value = substr($Recurrence, $p1+6);
+				if (strpos($value, "*ALL DAY*") !== false) {
+					$s = strpos($value, "and");
+					$value = substr($value, 0, $s);
+					$value .= "11:59:59pm";
+				} else {
+					$p2 = strpos($value, "from");
+					$p3 = strpos($value, "to");
+					$d = $p3 - $p2;
+					$value = substr_replace($value, "", $p2, $d+3);
+					if (substr($value, -1) === 'a') $value = substr_replace($value, "am", -1, 1);
+					elseif (substr($value, -1) === 'p') $value = substr_replace($value, "pm", -1, 1);
+				}
+			}
+			$AbsoluteEnd = ($value != null) ? date("Y-m-d H:i:s", strtotime($value)) : date("Y")+25 . "-01-01 00:00:00";
+		} else {
+			$AbsoluteEnd = $EndTime;
+		}
 
-	  if ($Grouping != '' && $Grouping != null) {
-	    $query = "INSERT INTO ccb_events (ID,Name,Description,Image,LocationName,StreetAddress,City,State,Zip,StartTime,EndTime,SetupStart,SetupEnd,AbsoluteEnd,Timezone,Recurrence,Exceptions,Resources,GroupID,Organizer,Grouping,Creator,Modifier,Created,Modified)
-	                              VALUES ('$ID','$Name','$Description','$Image','$LocationName','$StreetAddress','$City','$State','$Zip','$StartTime','$EndTime','$SetupStart','$SetupEnd','$AbsoluteEnd','$Timezone','$Recurrence','$Exceptions','$Resources','$GroupID','$Organizer','$Grouping','$Creator','$Modifier','$Created','$Modified')
-	                              ON DUPLICATE KEY UPDATE Name='$Name', Description='$Description', Image='$Image', LocationName='$LocationName', StreetAddress='$StreetAddress', City='$City', State='$State', Zip='$Zip', StartTime='$StartTime', EndTime='$EndTime', SetupStart='$SetupStart', SetupEnd='$SetupEnd', AbsoluteEnd='$AbsoluteEnd', Timezone='$Timezone', Recurrence='$Recurrence', Exceptions='$Exceptions', Resources='$Resources', GroupID='$GroupID', Organizer='$Organizer', Grouping='$Grouping', Modifier='$Modifier', Modified='$Modified';";
-	  } else {
-	    $query = "INSERT INTO ccb_events (ID,Name,Description,Image,LocationName,StreetAddress,City,State,Zip,StartTime,EndTime,SetupStart,SetupEnd,AbsoluteEnd,Timezone,Recurrence,Exceptions,Resources,GroupID,Organizer,Grouping,Creator,Modifier,Created,Modified)
-	                              VALUES ('$ID','$Name','$Description','$Image','$LocationName','$StreetAddress','$City','$State','$Zip','$StartTime','$EndTime','$SetupStart','$SetupEnd','$AbsoluteEnd','$Timezone','$Recurrence','$Exceptions','$Resources','$GroupID','$Organizer',NULL,'$Creator','$Modifier','$Created','$Modified')
-	                              ON DUPLICATE KEY UPDATE Name='$Name', Description='$Description', Image='$Image', LocationName='$LocationName', StreetAddress='$StreetAddress', City='$City', State='$State', Zip='$Zip', StartTime='$StartTime', EndTime='$EndTime', SetupStart='$SetupStart', SetupEnd='$SetupEnd', AbsoluteEnd='$AbsoluteEnd', Timezone='$Timezone', Recurrence='$Recurrence', Exceptions='$Exceptions', Resources='$Resources', GroupID='$GroupID', Organizer='$Organizer', Grouping=NULL, Modifier='$Modifier', Modified='$Modified';";
-	  }
+		if ($Grouping != '' && $Grouping != null) {
+			$query = "INSERT INTO ccb_events (ID,Name,Description,Image,LocationName,StreetAddress,City,State,Zip,StartTime,EndTime,SetupStart,SetupEnd,AbsoluteEnd,Timezone,Recurrence,Exceptions,Resources,GroupID,Organizer,Grouping,Creator,Modifier,Created,Modified)
+																VALUES ('$ID','$Name','$Description','$Image','$LocationName','$StreetAddress','$City','$State','$Zip','$StartTime','$EndTime','$SetupStart','$SetupEnd','$AbsoluteEnd','$Timezone','$Recurrence','$Exceptions','$Resources','$GroupID','$Organizer','$Grouping','$Creator','$Modifier','$Created','$Modified')
+																ON DUPLICATE KEY UPDATE Name='$Name', Description='$Description', Image='$Image', LocationName='$LocationName', StreetAddress='$StreetAddress', City='$City', State='$State', Zip='$Zip', StartTime='$StartTime', EndTime='$EndTime', SetupStart='$SetupStart', SetupEnd='$SetupEnd', AbsoluteEnd='$AbsoluteEnd', Timezone='$Timezone', Recurrence='$Recurrence', Exceptions='$Exceptions', Resources='$Resources', GroupID='$GroupID', Organizer='$Organizer', Grouping='$Grouping', Modifier='$Modifier', Modified='$Modified';";
+		} else {
+			$query = "INSERT INTO ccb_events (ID,Name,Description,Image,LocationName,StreetAddress,City,State,Zip,StartTime,EndTime,SetupStart,SetupEnd,AbsoluteEnd,Timezone,Recurrence,Exceptions,Resources,GroupID,Organizer,Grouping,Creator,Modifier,Created,Modified)
+																VALUES ('$ID','$Name','$Description','$Image','$LocationName','$StreetAddress','$City','$State','$Zip','$StartTime','$EndTime','$SetupStart','$SetupEnd','$AbsoluteEnd','$Timezone','$Recurrence','$Exceptions','$Resources','$GroupID','$Organizer',NULL,'$Creator','$Modifier','$Created','$Modified')
+																ON DUPLICATE KEY UPDATE Name='$Name', Description='$Description', Image='$Image', LocationName='$LocationName', StreetAddress='$StreetAddress', City='$City', State='$State', Zip='$Zip', StartTime='$StartTime', EndTime='$EndTime', SetupStart='$SetupStart', SetupEnd='$SetupEnd', AbsoluteEnd='$AbsoluteEnd', Timezone='$Timezone', Recurrence='$Recurrence', Exceptions='$Exceptions', Resources='$Resources', GroupID='$GroupID', Organizer='$Organizer', Grouping=NULL, Modifier='$Modifier', Modified='$Modified';";
+		}
 		$this->db->performQuery($query);
 	}
 
-	function add_group_participants($group, $participants, $status, $updated) {
-	  $i = 0;
-	  $p = 0;
-	  foreach ($participants as $key => $participant) {
-	    $i++;
-	  }
-	  $query = "INSERT INTO ccb_group_participants (`ID`,`GroupID`,`Individual`,`ReceiveEmailFromGroup`,`ReceiveSMSFromGroup`,`Status`,`Joined`,`Updated`) VALUES";
-	  foreach ($participants as $key => $participant) {
-	    $individual = $participant->attributes()->id;
-	    $membership_id = $group."-".$individual;
-	    $query .= " ('$membership_id','$group','$individual','0','0','$status',NULL,'$updated')";
-	    if ($p < ((int)$i - 1)) $query .= ",";
-	    $p++;
-	  }
-	  $query .= " ON DUPLICATE KEY UPDATE `Status`=VALUES(Status), `Updated`=VALUES(Updated);";
-	  $this->db->performQuery($query);
+	public function add_group_participants($group, $participants, $status, $updated) {
+		$i = 0;
+		$p = 0;
+		foreach ($participants as $key => $participant) {
+			$i++;
+		}
+		$query = "INSERT INTO ccb_group_participants (`ID`,`GroupID`,`Individual`,`ReceiveEmailFromGroup`,`ReceiveSMSFromGroup`,`Status`,`Joined`,`Updated`) VALUES";
+		foreach ($participants as $key => $participant) {
+			$individual = $participant->attributes()->id;
+			$membership_id = $group."-".$individual;
+			$query .= " ('$membership_id','$group','$individual','0','0','$status',NULL,'$updated')";
+			if ($p < ((int)$i - 1)) $query .= ",";
+			$p++;
+		}
+		$query .= " ON DUPLICATE KEY UPDATE `Status`=VALUES(Status), `Updated`=VALUES(Updated);";
+		$this->db->performQuery($query);
 	}
-	function get_user_defined_field($num, $udf) {
-	  $ret = (object)array('label'=>'','selection'=>'');
-	  $str = "udf_".$num;
-	  foreach ($udf as $key => $value) {
-	    if ($value->name == $str) $ret = $value;
-	  }
-	  return $ret;
+	public function get_user_defined_field($num, $udf) {
+		$ret = (object)array('label'=>'','selection'=>'');
+		$str = "udf_".$num;
+		foreach ($udf as $key => $value) {
+			if ($value->name == $str) $ret = $value;
+		}
+		return $ret;
 	}
 	function get_address_by_type($type, $addresses) {
-	  $ret = false;
-	  if (count((array)$addresses) > 0) {
-	    foreach ($addresses as $key => $value) {
-	      if ($value->address->attributes()->type == $type) $ret = $value->address;
-	    }
-	  }
-	  return $ret;
+		$ret = false;
+		if (count((array)$addresses) > 0) {
+			foreach ($addresses as $key => $value) {
+				if ($value->address->attributes()->type == $type) $ret = $value->address;
+			}
+		}
+		return $ret;
 	}
 
 }

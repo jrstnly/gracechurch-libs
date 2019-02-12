@@ -56,18 +56,19 @@ class Geo {
 		$lng_rads = atan2($x3, $y3);
 		$lat_rads = asin($z3);
 
-	  return array_map('rad2deg', array($lat_rads, $lng_rads));
-	 }
+		return array_map('rad2deg', array($lat_rads, $lng_rads));
+	}
 
 
-	 public function get_location_from_zip($zip, $type = "degrees") {
-		 $curl = curl_init();
-		 curl_setopt_array($curl, array(
-			 CURLOPT_RETURNTRANSFER => 1,
-			 CURLOPT_URL => $this->zip_base_url.ZIP_API_KEY."/"."info.json/".$zip."/".$type
-		 ));
-		 return json_decode(curl_exec($curl));
-	 }
+	public function get_location_from_zip($zip, $type = "degrees") {
+		$curl = curl_init();
+		curl_setopt_array($curl, array(
+			CURLOPT_RETURNTRANSFER => 1,
+			CURLOPT_URL => $this->zip_base_url.ZIP_API_KEY."/"."info.json/".$zip."/".$type
+		));
+		return json_decode(curl_exec($curl));
+	}
+	
 }
 
 ?>

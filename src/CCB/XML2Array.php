@@ -1,29 +1,29 @@
 <?php
 class XML2Array {
-  private static $xml = null;
+	private static $xml = null;
 	private static $encoding = 'UTF-8';
-  /**
-    * Initialize the root XML node [optional]
-   * @param $version
-   * @param $encoding
-   * @param $format_output
-  */
-  public static function init($version = '1.0', $encoding = 'UTF-8', $format_output = true) {
-    self::$xml = new DOMDocument($version, $encoding);
-    self::$xml->formatOutput = $format_output;
+	/**
+	 * Initialize the root XML node [optional]
+	 * @param $version
+	 * @param $encoding
+	 * @param $format_output
+	 */
+	public static function init($version = '1.0', $encoding = 'UTF-8', $format_output = true) {
+		self::$xml = new DOMDocument($version, $encoding);
+		self::$xml->formatOutput = $format_output;
 		self::$encoding = $encoding;
-  }
-  /**
-   * Convert an XML to Array
-   * @param string $node_name - name of the root node to be converted
-   * @param array $arr - aray to be converterd
-   * @return DOMDocument
-  */
-  public static function &createArray($input_xml) {
-    $xml = self::getXMLRoot();
+	}
+	/**
+	 * Convert an XML to Array
+	 * @param string $node_name - name of the root node to be converted
+	 * @param array $arr - aray to be converterd
+	 * @return DOMDocument
+	 */
+	public static function &createArray($input_xml) {
+		$xml = self::getXMLRoot();
 		if(is_string($input_xml)) {
-      $parsed = $xml->loadXML($input_xml);
-      if(!$parsed) {
+			$parsed = $xml->loadXML($input_xml);
+			if(!$parsed) {
 				throw new Exception('[XML2Array] Error parsing the XML string.');
 			}
 		} else {
@@ -33,15 +33,15 @@ class XML2Array {
 			$xml = self::$xml = $input_xml;
 		}
 		$array[$xml->documentElement->tagName] = self::convert($xml->documentElement);
-      self::$xml = null;    // clear the xml node in the class for 2nd time use.
-      return $array;
-    }
-    /**
-     * Convert an Array to XML
-     * @param mixed $node - XML as a string or as an object of DOMDocument
-     * @return mixed
-    **/
-    private static function &convert($node) {
+		self::$xml = null;    // clear the xml node in the class for 2nd time use.
+		return $array;
+	}
+	/**
+	 * Convert an Array to XML
+	 * @param mixed $node - XML as a string or as an object of DOMDocument
+	 * @return mixed
+	 **/
+	private static function &convert($node) {
 		$output = array();
 		switch ($node->nodeType) {
 			case XML_CDATA_SECTION_NODE:
@@ -93,18 +93,18 @@ class XML2Array {
 					}
 					$output['@attributes'] = $a;
 				}
-				break;
+			break;
 		}
 		return $output;
-    }
-    /*
-     * Get the root XML node, if there isn't one, create it.
-     */
-    private static function getXMLRoot(){
-      if(empty(self::$xml)) {
-        self::init();
-      }
-      return self::$xml;
-    }
+	}
+	/*
+	 * Get the root XML node, if there isn't one, create it.
+	 */
+	private static function getXMLRoot(){
+		if(empty(self::$xml)) {
+			self::init();
+		}
+		return self::$xml;
+	}
 }
 ?>
