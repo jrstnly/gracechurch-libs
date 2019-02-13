@@ -8,6 +8,7 @@ use GraceChurch\AssetManager;
 class CCB {
 	private $db;
 	private $am;
+	private $xml_class;
 	private $curl;
 	private $church;
 	private $user;
@@ -27,7 +28,8 @@ class CCB {
 	 */
 	public function __construct($church, $user, $pass, $predictable = false) {
 		$this->db = new DatabaseHandler("grace");
-		$this->am = new AssetManager();
+		$this->am = new AssetManager;
+		$this->xml_class = new XML2Array;
 		$this->church = $church;
 		$this->user = $user;
 		$this->pass = $pass;
@@ -94,10 +96,10 @@ class CCB {
 	}
 	private function formatData($data) {
 		if ($this->format == 'XML' ) { return $data; }
-		if ($this->format == 'OBJ' ) { return XML2Array::createArray($data); }
-		if ($this->format == 'ARR' ) { return $this->xml2array(XML2Array::createArray($data)); }
+		if ($this->format == 'OBJ' ) { return $this->xml_class->createArray($data); }
+		if ($this->format == 'ARR' ) { return $this->xml2array($this->xml_class->createArray($data)); }
 		if ($this->format == 'SAR' ) { return $this->xml2array(simplexml_load_string($data)); }
-		if ($this->format == 'JSON') { return json_encode($this->xml2array(XML2Array::createArray($data))); }
+		if ($this->format == 'JSON') { return json_encode($this->xml2array($this->xml_class->createArray($data))); }
 	}
 
 	private function get($srv, $parameters = NULL) {

@@ -1,4 +1,7 @@
 <?php
+
+namespace GraceChurch\CCB;
+
 class XML2Array {
 	private static $xml = null;
 	private static $encoding = 'UTF-8';
@@ -9,7 +12,7 @@ class XML2Array {
 	 * @param $format_output
 	 */
 	public static function init($version = '1.0', $encoding = 'UTF-8', $format_output = true) {
-		self::$xml = new DOMDocument($version, $encoding);
+		self::$xml = new \DOMDocument($version, $encoding);
 		self::$xml->formatOutput = $format_output;
 		self::$encoding = $encoding;
 	}
@@ -24,11 +27,11 @@ class XML2Array {
 		if(is_string($input_xml)) {
 			$parsed = $xml->loadXML($input_xml);
 			if(!$parsed) {
-				throw new Exception('[XML2Array] Error parsing the XML string.');
+				throw new \Exception('[XML2Array] Error parsing the XML string.');
 			}
 		} else {
 			if(get_class($input_xml) != 'DOMDocument') {
-				throw new Exception('[XML2Array] The input XML object should be of type: DOMDocument.');
+				throw new \Exception('[XML2Array] The input XML object should be of type: DOMDocument.');
 			}
 			$xml = self::$xml = $input_xml;
 		}
