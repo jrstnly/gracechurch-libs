@@ -15,7 +15,6 @@ class EventParser {
 	}
 
 	public function getAllEventsInRange($StartTime, $EndTime, $Campus = '1', $sort = false, $Grouping = null, $Public = null) {
-		$allEvents = array();
 		$query = "SELECT * FROM `ccb_events` WHERE `StartTime` < '".$EndTime->format("Y-m-d H:i:s")."' AND `AbsoluteEnd` > '".$StartTime->format("Y-m-d H:i:s")."'";
 
 		if ($Grouping != null && $Grouping != "") {
@@ -31,102 +30,42 @@ class EventParser {
 		}
 		if ($Public) $query .= " AND `PublicCalendarListed` = '1'";
 
-		$result = $this->db->getRecords($query);
+		$records = $this->db->getRecords($query);
+		$events = $this->buildEventsList($records, $StartTime, $EndTime, $Campus);
 
-		foreach ($result as $ev) {
-			$group = $this->db->getOneRecord("SELECT
-				`ccb_groups`.`ID`,
-				`ccb_groups`.`Name`,
-				`ccb_groups`.`Inactive`,
-				`ccb_groups`.`Campus`,
-				`ccb_groups`.`GroupType`,
-				`ccb_groups`.`Department`,
-				`ccb_campuses`.`Name` AS `CampusName`,
-				`ccb_lookup_group_type`.`name` AS `TypeName`,
-				`ccb_lookup_group_grouping`.`name` AS `DepartmentName`
-				FROM `ccb_groups`
-				JOIN `ccb_campuses` ON `ccb_groups`.`Campus` = `ccb_campuses`.`ID`
-				JOIN `ccb_lookup_group_type` ON `ccb_groups`.`GroupType` = `ccb_lookup_group_type`.`id`
-				JOIN `ccb_lookup_group_grouping` ON `ccb_groups`.`Department` = `ccb_lookup_group_grouping`.`id`
-				WHERE `ccb_groups`.`ID` = '".$ev['GroupID']."'");
-			if ($group['Inactive'] == '0' && ($Campus == null || $Campus == false || $group['Campus'] == $Campus)) {
-				$newEvent = new CalendarEvent();
-				$newEvent->ID = $ev['ID'];
-				$newEvent->Image = ($ev['Image'] != "") ? $this->am->getAccessKey($ev['Image']) : "";
-				$newEvent->StartTime = date_create_from_format("Y-m-d H:i:s",$ev['StartTime']);
-				$newEvent->EndTime = date_create_from_format("Y-m-d H:i:s",$ev['EndTime']);
-				//$newEvent->setupStart = date_create_from_format("Y-m-d H:i:s",$ev['SetupStart']);
-				//$newEvent->setupEnd = date_create_from_format("Y-m-d H:i:s",$ev['SetupEnd']);
-				$newEvent->Occurrence = date_create_from_format("Y-m-d H:i:s", $ev['StartTime']);
-				$newEvent->Recurrence = $ev['Recurrence'];
-				$newEvent->Resources = $ev['Resources'];
-				$newEvent->Name = $ev['Name'];
-				$newEvent->Campus = $group['Campus'];
-				$newEvent->CampusName = $group['CampusName'];
-				$newEvent->Group = $group['ID'];
-				$newEvent->GroupName = $group['Name'];
-				$newEvent->GroupType = $group['TypeName'];
-				$newEvent->GroupTypeID = $group['GroupType'];
-				$newEvent->Department = $group['DepartmentName'];
-				$newEvent->DepartmentID = $group['Department'];
-				$newEvent->Grouping = $ev['Grouping'];
-				$newEvent->Exceptions = json_decode($ev['Exceptions'], true);
-				$newEvent->Description = $ev['Description'];
-				$newEvent->Organizer = $ev['Organizer'];
-				$newEvent->Location = (object)["Name"=>$ev['LocationName'],"StreetAddress"=>$ev['StreetAddress'],"City"=>$ev['City'],"State"=>$ev['State'],"Zip"=>$ev['Zip']];
-				$newEvent->Tags = $ev['Tags'];
-
-				$array = $this->findAllOccurances($StartTime, $EndTime, $newEvent, $ev['Recurrence'], date_create_from_format("Y-m-d H:i:s", $ev['AbsoluteEnd']));
-
-				$allEvents = array_merge($allEvents, $array);
-			}
-		}
-
-		if ($sort || $sort == true || $sort == "Alphabetical") usort($allEvents, array($this, "sortAlphabetically"));
-		if ($sort && $sort == "StartTime") usort($allEvents, array($this, "sortByStartTime"));
-		return $allEvents;
+		if ($sort || $sort == true || $sort == "Alphabetical") usort($events, array($this, "sortAlphabetically"));
+		if ($sort && $sort == "StartTime") usort($events, array($this, "sortByStartTime"));
+		return $events;
 	}
 
 
 	public function getEventsByUser($uid, $StartTime, $EndTime, $sort = true) {
 		$allEvents = array();
+		$ignored_groups = [
+			1,     // Our Church
+			26,    // All Eden Prairie Campus Attenders
+			2375,  // All Chaska Campus Attenders
+			2857   // All Online Campus Attenders
+		];
 		$groups = $this->db->getRecords("SELECT GroupID FROM ccb_group_participants WHERE Individual = '$uid'");
 		$query = "SELECT * FROM `ccb_events` WHERE StartTime < '".$EndTime->format("Y-m-d H:i:s")."' AND AbsoluteEnd > '".$StartTime->format("Y-m-d H:i:s")."'";
 
 		if ($groups != null && count($groups) > 0) {
 			$query .= " AND (";
 			foreach ($groups as $key => $value) {
-				if ($key == (count($groups) - 1)) $query .= "GroupID = '".$value['GroupID']."'";
-				else $query .= "GroupID = '".$value['GroupID']."' OR ";
+				if (!in_array($value['GroupID'], $ignored_groups)) {
+					if ($key == (count($groups) - 1)) $query .= "GroupID = '".$value['GroupID']."'";
+					else $query .= "GroupID = '".$value['GroupID']."' OR ";
+				}
 			}
 			$query .= ")";
 		}
 
-		$result = $this->db->getRecords($query);
-		foreach ($result as $ev) {
-			$group = $this->db->getOneRecord("SELECT * FROM ccb_groups WHERE ID = '".$ev['GroupID']."'");
-			if ($group['Inactive'] == '0' && $group['InteractionType'] != 'Administrative') {
-				$newEvent = new CalendarEvent();
-				$newEvent->ID = $ev['ID'];
-				$newEvent->StartTime = date_create_from_format("Y-m-d H:i:s",$ev['StartTime']);
-				$newEvent->EndTime = date_create_from_format("Y-m-d H:i:s",$ev['EndTime']);
-				//$newEvent->setupStart = date_create_from_format("Y-m-d H:i:s",$ev['SetupStart']);
-				//$newEvent->setupEnd = date_create_from_format("Y-m-d H:i:s",$ev['SetupEnd']);
-				$newEvent->Occurrence = date_create_from_format("Y-m-d H:i:s", $ev['StartTime']);
-				$newEvent->Resources = $ev['Resources'];
-				$newEvent->Name = $ev['Name'];
-				$newEvent->Group = $ev['GroupID'];
-				$newEvent->Grouping = $ev['Grouping'];
-				$newEvent->Exceptions = json_decode($ev['Exceptions'], true);
-				$newEvent->Description = $ev['Description'];
-				$newEvent->Organizer = $ev['Organizer'];
+		$records = $this->db->getRecords($query);
+		$events = $this->buildEventsList($records, $StartTime, $EndTime, $Campus);
 
-				$array = $this->findAllOccurances($StartTime, $EndTime, $newEvent, $ev['Recurrence'], date_create_from_format("Y-m-d H:i:s", $ev['AbsoluteEnd']));
-				$allEvents = array_merge($allEvents, $array);
-			}
-		}
-		if($sort) usort($allEvents, array($this, "sortByStartTime"));
-		return $allEvents;
+		usort($events, array($this, "sortByStartTime"));
+		return $events;
 	}
 
 	public function getTodaysEvents($Campus = '1', $sort = "Alphabetical") {
@@ -161,21 +100,74 @@ class EventParser {
 	}
 
 
-	public function findAllOccurances($StartTime, $EndTime, $event, $recurrance, $absoluteEnd) {
-		$eventList = array();
-		if($event->StartTime <= $EndTime && $event->EndTime >= $StartTime && !$this->isException($event->StartTime, $event)){
-			array_push($eventList, $event);
+	private function buildEventsList($Records, $StartTime, $EndTime, $Campus = null) {
+		$all_events = [];
+		foreach ($Records as $ev) {
+			$group = $this->db->getOneRecord("SELECT
+				`ccb_groups`.`ID`,
+				`ccb_groups`.`Name`,
+				`ccb_groups`.`Inactive`,
+				`ccb_groups`.`Campus`,
+				`ccb_groups`.`GroupType`,
+				`ccb_groups`.`Department`,
+				`ccb_campuses`.`Name` AS `CampusName`,
+				`ccb_lookup_group_type`.`name` AS `TypeName`,
+				`ccb_lookup_group_grouping`.`name` AS `DepartmentName`
+				FROM `ccb_groups`
+				JOIN `ccb_campuses` ON `ccb_groups`.`Campus` = `ccb_campuses`.`ID`
+				JOIN `ccb_lookup_group_type` ON `ccb_groups`.`GroupType` = `ccb_lookup_group_type`.`id`
+				JOIN `ccb_lookup_group_grouping` ON `ccb_groups`.`Department` = `ccb_lookup_group_grouping`.`id`
+				WHERE `ccb_groups`.`ID` = '".$ev['GroupID']."'");
+			if ($group['Inactive'] == '0' && ($campus == null || $campus == false || $group['Campus'] == $campus)) {
+				$event = new CalendarEvent();
+				$event->ID = $ev['ID'];
+				$event->Image = ($ev['Image'] != "") ? $this->am->getAccessKey($ev['Image']) : "";
+				$event->StartTime = date_create_from_format("Y-m-d H:i:s",$ev['StartTime']);
+				$event->EndTime = date_create_from_format("Y-m-d H:i:s",$ev['EndTime']);
+				//$event->SetupStart = date_create_from_format("Y-m-d H:i:s",$ev['SetupStart']);
+				//$event->SetupEnd = date_create_from_format("Y-m-d H:i:s",$ev['SetupEnd']);
+				$event->Occurrence = date_create_from_format("Y-m-d H:i:s", $ev['StartTime']);
+				$event->Recurrence = $ev['Recurrence'];
+				$event->Resources = $ev['Resources'];
+				$event->Name = $ev['Name'];
+				$event->Campus = $group['Campus'];
+				$event->CampusName = $group['CampusName'];
+				$event->Group = $group['ID'];
+				$event->GroupName = $group['Name'];
+				$event->GroupType = $group['TypeName'];
+				$event->GroupTypeID = $group['GroupType'];
+				$event->Department = $group['DepartmentName'];
+				$event->DepartmentID = $group['Department'];
+				$event->Grouping = $ev['Grouping'];
+				$event->Exceptions = json_decode($ev['Exceptions'], true);
+				$event->Description = $ev['Description'];
+				$event->Organizer = $ev['Organizer'];
+				$event->Location = (object)["Name"=>$ev['LocationName'],"StreetAddress"=>$ev['StreetAddress'],"City"=>$ev['City'],"State"=>$ev['State'],"Zip"=>$ev['Zip']];
+				$event->Tags = $ev['Tags'];
+
+				$occurrences = $this->findAllOccurances($StartTime, $EndTime, $event, $ev['Recurrence'], date_create_from_format("Y-m-d H:i:s", $ev['AbsoluteEnd']));
+
+				$all_events = array_merge($all_events, $occurrences);
+			}
 		}
-		$eventList = array_merge($eventList, $this->CalculateDailyRecurrancesInRange($StartTime, $EndTime, $event, $recurrance, $absoluteEnd));
-		$eventList = array_merge($eventList, $this->CalculateWeeklyRecurrancesInRange($StartTime, $EndTime, $event, $recurrance, $absoluteEnd));
-		$eventList = array_merge($eventList, $this->CalculateMonthlyRecurrancesInRange($StartTime, $EndTime, $event, $recurrance, $absoluteEnd));
-		$exceptionArray = $event->Exceptions;
+		return $all_events;
+	}
+
+	private function findAllOccurances($StartTime, $EndTime, $SourceEvent, $Recurrence, $AbsoluteEnd) {
+		$eventList = array();
+		if($SourceEvent->StartTime <= $EndTime && $SourceEvent->EndTime >= $StartTime && !$this->isException($SourceEvent->StartTime, $SourceEvent)){
+			array_push($eventList, $SourceEvent);
+		}
+		$eventList = array_merge($eventList, $this->CalculateDailyRecurrancesInRange($StartTime, $EndTime, $SourceEvent, $Recurrence, $AbsoluteEnd));
+		$eventList = array_merge($eventList, $this->CalculateWeeklyRecurrancesInRange($StartTime, $EndTime, $SourceEvent, $Recurrence, $AbsoluteEnd));
+		$eventList = array_merge($eventList, $this->CalculateMonthlyRecurrancesInRange($StartTime, $EndTime, $SourceEvent, $Recurrence, $AbsoluteEnd));
+		$exceptionArray = $SourceEvent->Exceptions;
 		return $eventList;
 	}
 
-	private function isException($StartTime, $event) {
-		if (is_array($event->Exceptions)) {
-			return in_array($StartTime->format("Y-m-d"),$event->Exceptions);
+	private function isException($StartTime, $SourceEvent) {
+		if (is_array($SourceEvent->Exceptions)) {
+			return in_array($StartTime->format("Y-m-d"),$SourceEvent->Exceptions);
 		} else {
 			return false;
 		}
@@ -193,43 +185,43 @@ class EventParser {
 	}
 
 	/*********************** Calculate daily recurrances in range ************************/
-	private function calculateDailyRecurrancesInRange($StartTime, $EndTime, $event, $recurrance, $absoluteEnd) {
-		$ret = array();
+	private function calculateDailyRecurrancesInRange($StartTime, $EndTime, $SourceEvent, $Recurrence, $AbsoluteEnd) {
+		$occurrences = [];
 
-		if(strpos($recurrance,"Every day") === false || $EndTime < $event->StartTime || $absoluteEnd < $StartTime)
-			return $ret;
+		if(strpos($Recurrence,"Every day") === false || $EndTime < $SourceEvent->StartTime || $AbsoluteEnd < $StartTime)
+			return $occurrences;
 
 		$tmp = clone $StartTime;
 
-		if($tmp < $event->StartTime)
-			$tmp = clone $event->StartTime;
+		if($tmp < $SourceEvent->StartTime)
+			$tmp = clone $SourceEvent->StartTime;
 
 		//Don't create a new occurrence on the start date of the event
-		if($tmp->format("Y-m-d") == $event->StartTime->format("Y-m-d"))
+		if($tmp->format("Y-m-d") == $SourceEvent->StartTime->format("Y-m-d"))
 			$tmp->add(date_interval_create_from_date_string('1 day'));
 
 		while ($tmp <= $EndTime){
-			$newEvent = clone $event;
-			$newEvent->StartTime = date_create_from_format("Y-m-d H:i:s", $tmp->format("Y-m-d")." ".$event->StartTime->format("H:i:s"));
-			$newEvent->EndTime = date_create_from_format("Y-m-d H:i:s", $tmp->format("Y-m-d")." ".$event->EndTime->format("H:i:s"));
-			if($newEvent->StartTime > $absoluteEnd && !$this->isException($newEvent->StartTime,$event))
-				return $ret;
+			$Event = clone $SourceEvent;
+			$Event->StartTime = date_create_from_format("Y-m-d H:i:s", $tmp->format("Y-m-d")." ".$SourceEvent->StartTime->format("H:i:s"));
+			$Event->EndTime = date_create_from_format("Y-m-d H:i:s", $tmp->format("Y-m-d")." ".$SourceEvent->EndTime->format("H:i:s"));
+			if($Event->StartTime > $AbsoluteEnd && !$this->isException($Event->StartTime, $SourceEvent))
+				return $occurrences;
 
-			array_push($ret, $newEvent);
+			array_push($occurrences, $Event);
 
 			$tmp->add(date_interval_create_from_date_string('1 day'));
 		}
-		return $ret;
+		return $occurrences;
 	}
 
 	/*********************** Calculate weekly recurrances in range ************************/
-	private function calculateWeeklyRecurrancesInRange($StartTime, $EndTime, $event, $recurrance, $absoluteEnd) {
-		$ret = array();
-		$matches = array();
+	private function calculateWeeklyRecurrancesInRange($StartTime, $EndTime, $SourceEvent, $Recurrence, $AbsoluteEnd) {
+		$occurrences = [];
+		$matches = [];
 		$days_in_week = 7;
 		$calc_start_week = true;
 
-		if (preg_match("/^Every ([2-4])?( )?week(s)?/", $recurrance, $matches) && $EndTime > $event->StartTime && $absoluteEnd > $StartTime) {
+		if (preg_match("/^Every ([2-4])?( )?week(s)?/", $Recurrence, $matches) && $EndTime > $SourceEvent->StartTime && $AbsoluteEnd > $StartTime) {
 			$multiplier = (isset($matches[1])) ? (int)$matches[1] : 1;
 
 			$searchDate1 = clone $StartTime;
@@ -238,9 +230,9 @@ class EventParser {
 			for($i = 0; $i < 7; $i++) {
 				if($searchDate1 > $EndTime)
 					break;
-				if(strpos($recurrance,$searchDate1->format("l")) !== false) {
-					if ($searchDate1 < $event->StartTime) { // Check to see if range start is before start of event. If so, clone start of event instead of range start to prevent unnecessary cycles.
-						$searchDate2 = clone $event->StartTime;
+				if(strpos($Recurrence,$searchDate1->format("l")) !== false) {
+					if ($searchDate1 < $SourceEvent->StartTime) { // Check to see if range start is before start of event. If so, clone start of event instead of range start to prevent unnecessary cycles.
+						$searchDate2 = clone $SourceEvent->StartTime;
 						$calc_start_week = false; // Skip calculating starting week since event start is the starting week.
 					} else {
 						$searchDate2 = clone $searchDate1;
@@ -248,7 +240,7 @@ class EventParser {
 					if ($calc_start_week) { // Check to see if we need to calculate week offset.
 						while (true) {
 							// Check to see if current week is a multiple of week offset and if not add one week and check again.
-							$weeks = ceil(abs($searchDate2->format('U') - $event->StartTime->format("U")) / 60 / 60 / 24 / 7);
+							$weeks = ceil(abs($searchDate2->format('U') - $SourceEvent->StartTime->format("U")) / 60 / 60 / 24 / 7);
 							if ($weeks % $multiplier == 0) {
 								break;
 							}
@@ -259,60 +251,60 @@ class EventParser {
 					while($searchDate2 <= $EndTime) {
 						if($searchDate2 > $EndTime)
 							break;
-						$newEvent = clone $event;
-						$newEvent->StartTime = date_create_from_format("Y-m-d H:i:s", $searchDate2->format("Y-m-d")." ".$event->StartTime->format("H:i:s"));
-						$newEvent->EndTime = date_create_from_format("Y-m-d H:i:s", $searchDate2->format("Y-m-d")." ".$event->EndTime->format("H:i:s"));
-						$newEvent->Occurrence = $newEvent->StartTime;
+						$Event = clone $SourceEvent;
+						$Event->StartTime = date_create_from_format("Y-m-d H:i:s", $searchDate2->format("Y-m-d")." ".$SourceEvent->StartTime->format("H:i:s"));
+						$Event->EndTime = date_create_from_format("Y-m-d H:i:s", $searchDate2->format("Y-m-d")." ".$SourceEvent->EndTime->format("H:i:s"));
+						$Event->Occurrence = $Event->StartTime;
 						//Checks: don't duplicate the original event, verify start & end time range
-						if($newEvent->StartTime->format("Y-m-d") != $event->StartTime->format("Y-m-d") &&
-								$newEvent->StartTime < $EndTime &&
-								$newEvent->EndTime > $StartTime &&
-								!$this->isException($newEvent->StartTime, $event) &&
-								$newEvent->StartTime > $event->StartTime &&
-								$newEvent->EndTime <= $absoluteEnd
+						if($Event->StartTime->format("Y-m-d") != $SourceEvent->StartTime->format("Y-m-d") &&
+								$Event->StartTime < $EndTime &&
+								$Event->EndTime > $StartTime &&
+								!$this->isException($Event->StartTime, $SourceEvent) &&
+								$Event->StartTime > $SourceEvent->StartTime &&
+								$Event->EndTime <= $AbsoluteEnd
 							)
-							array_push($ret, $newEvent);
+							array_push($occurrences, $Event);
 						$searchDate2->add(date_interval_create_from_date_string(($days_in_week * $multiplier).' days'));
 					}
 				}
 				$searchDate1->add(date_interval_create_from_date_string('1 day'));
 			}
 		}
-		return $ret;
+		return $occurrences;
 	}
 
 	/*********************** Calculate monthly recurrances in range ************************/
-	private function calculateMonthlyRecurrancesInRange($StartTime, $EndTime, $event, $recurrance, $absoluteEnd) {
-		$ret = array();
+	private function calculateMonthlyRecurrancesInRange($StartTime, $EndTime, $SourceEvent, $Recurrence, $AbsoluteEnd) {
+		$occurrences = [];
 
-		if(strpos($recurrance,"Every month") === false || $EndTime < $event->StartTime || $absoluteEnd < $StartTime) return $ret;
+		if(strpos($Recurrence,"Every month") === false || $EndTime < $SourceEvent->StartTime || $AbsoluteEnd < $StartTime) return $occurrences;
 
-		$pattern = '/the (?<occurance>\\w+) (?<day>\\w+) of the month/';
-		preg_match_all($pattern, $recurrance, $matches);
+		$pattern = '/the (?<occurence>\\w+) (?<day>\\w+) of the month/';
+		preg_match_all($pattern, $Recurrence, $matches);
 
 		$searchMonth = date_create_from_format("Y-m-d H:i:s",$StartTime->format("Y-m")."-01 00:00:00");
 
-		if($searchMonth < date_create_from_format("Y-m-d H:i:s",$event->StartTime->format("Y-m")."-01 00:00:00")) {
-			$searchMonth = date_create_from_format("Y-m-d H:i:s",$event->StartTime->format("Y-m")."-01 00:00:00");
+		if($searchMonth < date_create_from_format("Y-m-d H:i:s",$SourceEvent->StartTime->format("Y-m")."-01 00:00:00")) {
+			$searchMonth = date_create_from_format("Y-m-d H:i:s",$SourceEvent->StartTime->format("Y-m")."-01 00:00:00");
 		}
 
 		while($searchMonth < $EndTime) {
-			for($i=0;$i<count($matches['occurance']);$i++) {
-				$occurance = 0;
+			for($i=0;$i<count($matches['occurence']);$i++) {
+				$occurence = 0;
 
-				switch($matches['occurance'][$i]) {
-					case "first": $occurance = 1; break;
-					case "second": $occurance = 2; break;
-					case "third": $occurance = 3; break;
-					case "fourth": $occurance = 4; break;
-					case "fifth": $occurance = 5; break;
+				switch($matches['occurence'][$i]) {
+					case "first": $occurence = 1; break;
+					case "second": $occurence = 2; break;
+					case "third": $occurence = 3; break;
+					case "fourth": $occurence = 4; break;
+					case "fifth": $occurence = 5; break;
 				}
 
 				for($x=1;$x<=cal_days_in_month(CAL_GREGORIAN, intval($searchMonth->format("m")), intval($searchMonth->format("Y")));$x++) {
 					if(strtolower(date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m")."-".$x." 00:00:00")->format("l")) == strtolower($matches['day'][$i])) {
-						$occurance--;
-						if($occurance == 0) {
-							$occurance=$x;
+						$occurence--;
+						if($occurence == 0) {
+							$occurence=$x;
 							break;
 						} else {
 							$x += 6;
@@ -320,23 +312,23 @@ class EventParser {
 					}
 				}
 
-				$newStart = date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m-").$occurance." ".$event->StartTime->format("H:i:s"));
-				$newEnd = date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m-").$occurance." ".$event->EndTime->format("H:i:s"));
-				if($newStart <= $absoluteEnd && $newStart > $event->StartTime && $newStart < $EndTime && $newEnd > $StartTime && $newStart->format("Y-m-d") != $event->StartTime->format("Y-m-d") && !$this->isException($newStart,$event)) {
-					$newEvent = clone $event;
-					$newEvent->StartTime = $newStart;
-					$newEvent->EndTime = $newEnd;
-					$newEvent->Occurrence = $newStart;
-					array_push($ret,$newEvent);
+				$newStart = date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m-").$occurence." ".$SourceEvent->StartTime->format("H:i:s"));
+				$newEnd = date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m-").$occurence." ".$SourceEvent->EndTime->format("H:i:s"));
+				if($newStart <= $AbsoluteEnd && $newStart > $SourceEvent->StartTime && $newStart < $EndTime && $newEnd > $StartTime && $newStart->format("Y-m-d") != $SourceEvent->StartTime->format("Y-m-d") && !$this->isException($newStart,$SourceEvent)) {
+					$Event = clone $SourceEvent;
+					$Event->StartTime = $newStart;
+					$Event->EndTime = $newEnd;
+					$Event->Occurrence = $newStart;
+					array_push($occurrences,$Event);
 				}
 			}
 
 			$searchMonth->add(date_interval_create_from_date_string('1 month'));
-			if($searchMonth > $absoluteEnd)
+			if($searchMonth > $AbsoluteEnd)
 				break;
 		}
 
-		return $ret;
+		return $occurrences;
 	}
 
 }
