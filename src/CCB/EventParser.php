@@ -118,7 +118,7 @@ class EventParser {
 				JOIN `ccb_lookup_group_type` ON `ccb_groups`.`GroupType` = `ccb_lookup_group_type`.`id`
 				JOIN `ccb_lookup_group_grouping` ON `ccb_groups`.`Department` = `ccb_lookup_group_grouping`.`id`
 				WHERE `ccb_groups`.`ID` = '".$ev['GroupID']."'");
-			if ($group['Inactive'] == '0' && ($campus == null || $campus == false || $group['Campus'] == $campus)) {
+			if ($group['Inactive'] == '0' && ($Campus == null || $Campus == false || $group['Campus'] == $Campus)) {
 				$event = new CalendarEvent();
 				$event->ID = $ev['ID'];
 				$event->Image = ($ev['Image'] != "") ? $this->am->getAccessKey($ev['Image']) : "";
