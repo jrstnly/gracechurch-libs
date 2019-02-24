@@ -525,7 +525,7 @@ class CCB {
 		$marital_status = $this->db->sanitize($i['marital_status']);
 		$anniversary = $this->db->sanitize($i['anniversary']);
 		$baptized = ($i['baptized'] == 'true') ? 1 : 0;
-		$image = get_image($i['image'], preg_replace("/[^[:alnum:][:space:]]/u", '', $first_name).'_'.preg_replace("/[^[:alnum:][:space:]]/u", '', $last_name));
+		$image = $this->get_image($i['image'], preg_replace("/[^[:alnum:][:space:]]/u", '', $first_name).'_'.preg_replace("/[^[:alnum:][:space:]]/u", '', $last_name));
 		$email = $this->db->sanitize($i['email']);
 		$campus = $this->db->sanitize($i['campus']['attributes']['id']);
 		$family = $this->db->sanitize($i['family']['attributes']['id']);
@@ -540,9 +540,9 @@ class CCB {
 		$receive_email_from_church = ($i['receive_email_from_church'] == 'true') ? 1 : 0;
 		$login = $this->db->sanitize($i['login']);
 		$limited_access_user = ($i['limited_access_user'] == 'true') ? 1 : 0;
-		$home_phone = $this->db->sanitize(get_phone('home', $i));
-		$mobile_phone = $this->db->sanitize(get_phone('mobile', $i));
-		$work_phone = $this->db->sanitize(get_phone('work', $i));
+		$home_phone = $this->db->sanitize($this->get_phone('home', $i));
+		$mobile_phone = $this->db->sanitize($this->get_phone('mobile', $i));
+		$work_phone = $this->db->sanitize($this->get_phone('work', $i));
 		$street_address = $this->db->sanitize($i['addresses']['address'][0]['street_address']);
 		$city = $this->db->sanitize($i['addresses']['address'][0]['city']);
 		$state = $this->db->sanitize($i['addresses']['address'][0]['state']);
