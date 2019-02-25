@@ -68,11 +68,11 @@ class Tag {
 					$return["status"] = "success";
 					$return["message"] = "Unable to contact primary printer. Job sent to backup printer.";
 				} else {
-					$return["status"] = "success";
+					$return["status"] = "error";
 					$return["message"] = "Unable to contact primary printer and no backup defined. Please contact the system administrator for assistance.";
 				}
 			} catch (ZebraCommunicationException $e) {
-				$return["status"] = "success";
+				$return["status"] = "error";
 				$return["message"] = "Unable to contact primary and backup printers. Please contact the system administrator for assistance.";
 			}
 		}
