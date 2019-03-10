@@ -174,13 +174,13 @@ class EventParser {
 	}
 
 	/*********************** Sort functions ************************/
-	private static function sortAlphabetically($a,$b) {
+	public static function sortAlphabetically($a,$b) {
 		$string = strcasecmp($a->Name, $b->Name);
 		if ($string == 0) $return = $a->StartTime > $b->StartTime;
 		else $return = $string;
 		return $return;
 	}
-	private static function sortByStartTime($a,$b) {
+	public static function sortByStartTime($a,$b) {
 		return $a->StartTime > $b->StartTime;
 	}
 
