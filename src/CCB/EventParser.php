@@ -277,57 +277,69 @@ class EventParser {
 	private function calculateMonthlyRecurrancesInRange($StartTime, $EndTime, $SourceEvent, $Recurrence, $AbsoluteEnd) {
 		$occurrences = [];
 
-		if(strpos($Recurrence,"Every month") === false || $EndTime < $SourceEvent->StartTime || $AbsoluteEnd < $StartTime) return $occurrences;
+		if (preg_match("/^Every ([1-12])?( )?month(s)?/", $Recurrence, $matches1) && $EndTime > $SourceEvent->StartTime && $AbsoluteEnd > $StartTime) {
+			$multiplier = (isset($matches1[1]) && $matches1[1] != "") ? (int)$matches1[1] : 1;
 
-		$pattern = '/the (?<occurence>\\w+) (?<day>\\w+) of the month/';
-		preg_match_all($pattern, $Recurrence, $matches);
+			$searchMonth = date_create_from_format("Y-m-d H:i:s",$StartTime->format("Y-m")."-01 00:00:00");
 
-		$searchMonth = date_create_from_format("Y-m-d H:i:s",$StartTime->format("Y-m")."-01 00:00:00");
-
-		if($searchMonth < date_create_from_format("Y-m-d H:i:s",$SourceEvent->StartTime->format("Y-m")."-01 00:00:00")) {
-			$searchMonth = date_create_from_format("Y-m-d H:i:s",$SourceEvent->StartTime->format("Y-m")."-01 00:00:00");
-		}
-
-		while($searchMonth < $EndTime) {
-			for($i=0;$i<count($matches['occurence']);$i++) {
-				$occurence = 0;
-
-				switch($matches['occurence'][$i]) {
-					case "first": $occurence = 1; break;
-					case "second": $occurence = 2; break;
-					case "third": $occurence = 3; break;
-					case "fourth": $occurence = 4; break;
-					case "fifth": $occurence = 5; break;
-				}
-
-				for($x=1;$x<=cal_days_in_month(CAL_GREGORIAN, intval($searchMonth->format("m")), intval($searchMonth->format("Y")));$x++) {
-					if(strtolower(date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m")."-".$x." 00:00:00")->format("l")) == strtolower($matches['day'][$i])) {
-						$occurence--;
-						if($occurence == 0) {
-							$occurence=$x;
-							break;
-						} else {
-							$x += 6;
-						}
+			if ($searchMonth < date_create_from_format("Y-m-d H:i:s",$SourceEvent->StartTime->format("Y-m")."-01 00:00:00")) {
+				$searchMonth = date_create_from_format("Y-m-d H:i:s",$SourceEvent->StartTime->format("Y-m")."-01 00:00:00");
+			} else {
+				while (true) {
+					$originalMonth = date_create_from_format("Y-m-d H:i:s",$SourceEvent->StartTime->format("Y-m")."-01 00:00:00");
+					$months = date_diff($originalMonth, $searchMonth)->m;
+					if ($months % $multiplier == 0) {
+						break;
 					}
-				}
-
-				$newStart = date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m-").$occurence." ".$SourceEvent->StartTime->format("H:i:s"));
-				$newEnd = date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m-").$occurence." ".$SourceEvent->EndTime->format("H:i:s"));
-				if($newStart <= $AbsoluteEnd && $newStart > $SourceEvent->StartTime && $newStart < $EndTime && $newEnd > $StartTime && $newStart->format("Y-m-d") != $SourceEvent->StartTime->format("Y-m-d") && !$this->isException($newStart,$SourceEvent)) {
-					$Event = clone $SourceEvent;
-					$Event->StartTime = $newStart;
-					$Event->EndTime = $newEnd;
-					$Event->Occurrence = $newStart;
-					array_push($occurrences,$Event);
+					$searchMonth->add(date_interval_create_from_date_string('1 month'));
 				}
 			}
 
-			$searchMonth->add(date_interval_create_from_date_string('1 month'));
-			if($searchMonth > $AbsoluteEnd)
-				break;
-		}
+			$pattern = '/the (?<occurence>\\w+) (?<day>\\w+) of the month/';
+			preg_match_all($pattern, $Recurrence, $matches2);
 
+			while ($searchMonth < $EndTime) {
+				for ($i=0;$i<count($matches2['occurence']);$i++) {
+					$occurence = 0;
+
+					switch ($matches2['occurence'][$i]) {
+						case "first": $occurence = 1; break;
+						case "second": $occurence = 2; break;
+						case "third": $occurence = 3; break;
+						case "fourth": $occurence = 4; break;
+						case "fifth": $occurence = 5; break;
+					}
+
+					for ($x=1;$x<=cal_days_in_month(CAL_GREGORIAN, intval($searchMonth->format("m")), intval($searchMonth->format("Y")));$x++) {
+						if (strtolower(date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m")."-".$x." 00:00:00")->format("l")) == strtolower($matches2['day'][$i])) {
+							$occurence--;
+							if ($occurence == 0) {
+								$occurence=$x;
+								break;
+							} else {
+								$x += 6;
+							}
+						}
+					}
+
+					$newStart = date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m-").$occurence." ".$SourceEvent->StartTime->format("H:i:s"));
+					$newEnd = date_create_from_format("Y-m-d H:i:s",$searchMonth->format("Y-m-").$occurence." ".$SourceEvent->EndTime->format("H:i:s"));
+					if ($newStart <= $AbsoluteEnd && $newStart > $SourceEvent->StartTime && $newStart < $EndTime && $newEnd > $StartTime && $newStart->format("Y-m-d") != $SourceEvent->StartTime->format("Y-m-d") && !$this->isException($newStart,$SourceEvent)) {
+						$Event = clone $SourceEvent;
+						$Event->StartTime = $newStart;
+						$Event->EndTime = $newEnd;
+						$Event->Occurrence = $newStart;
+						array_push($occurrences,$Event);
+					}
+				}
+
+				$dateIntervalString = $multiplier.' month';
+				$dateIntervalString .= ($multiplier > 1) ? 's' : '';
+				$searchMonth->add(date_interval_create_from_date_string($dateIntervalString));
+				if ($searchMonth > $AbsoluteEnd)
+					break;
+			}
+		}
 		return $occurrences;
 	}
 
