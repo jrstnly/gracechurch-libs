@@ -8,10 +8,17 @@ use GraceChurch\AssetManager;
 class EventParser {
 	private $db;
 	private $am;
+	private $featured_groups;
 
 	public function __construct() {
 		$this->db = new DatabaseHandler("grace");
 		$this->am = new AssetManager();
+		$this->featured_groups = [
+			1,     // Our Church
+			26,    // All Eden Prairie Campus Attenders
+			2375,  // All Chaska Campus Attenders
+			2857   // All Online Campus Attenders
+		];
 	}
 
 	public function getAllEventsInRange($StartTime, $EndTime, $Campus = '1', $sort = false, $Grouping = null, $Public = null) {
@@ -41,19 +48,13 @@ class EventParser {
 
 	public function getEventsByUser($uid, $StartTime, $EndTime, $sort = true) {
 		$allEvents = array();
-		$ignored_groups = [
-			1,     // Our Church
-			26,    // All Eden Prairie Campus Attenders
-			2375,  // All Chaska Campus Attenders
-			2857   // All Online Campus Attenders
-		];
 		$groups = $this->db->getRecords("SELECT GroupID FROM ccb_group_participants WHERE Individual = '$uid'");
 		$query = "SELECT * FROM `ccb_events` WHERE StartTime < '".$EndTime->format("Y-m-d H:i:s")."' AND AbsoluteEnd > '".$StartTime->format("Y-m-d H:i:s")."'";
 
 		if ($groups != null && count($groups) > 0) {
 			$query .= " AND (";
 			foreach ($groups as $key => $value) {
-				if (!in_array($value['GroupID'], $ignored_groups)) {
+				if (!in_array($value['GroupID'], $this->featured_groups)) {
 					if ($key == (count($groups) - 1)) $query .= "GroupID = '".$value['GroupID']."'";
 					else $query .= "GroupID = '".$value['GroupID']."' OR ";
 				}
