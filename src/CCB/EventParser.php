@@ -63,7 +63,7 @@ class EventParser {
 		}
 
 		$records = $this->db->getRecords($query);
-		$events = $this->buildEventsList($records, $StartTime, $EndTime, $Campus);
+		$events = $this->buildEventsList($records, $StartTime, $EndTime);
 
 		usort($events, array($this, "sortByStartTime"));
 		return $events;
