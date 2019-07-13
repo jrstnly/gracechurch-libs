@@ -47,7 +47,7 @@ class EventParser {
 
 
 	public function getEventsByUser($uid, $StartTime, $EndTime, $sort = true) {
-		$allEvents = array();
+		$events = [];
 		$groups = $this->db->getRecords("SELECT GroupID FROM ccb_group_participants WHERE Individual = '$uid'");
 		$query = "SELECT * FROM `ccb_events` WHERE StartTime < '".$EndTime->format("Y-m-d H:i:s")."' AND AbsoluteEnd > '".$StartTime->format("Y-m-d H:i:s")."'";
 
@@ -60,12 +60,14 @@ class EventParser {
 				}
 			}
 			$query .= ")";
+
+
+			$records = $this->db->getRecords($query);
+			$events = $this->buildEventsList($records, $StartTime, $EndTime);
+
+			usort($events, array($this, "sortByStartTime"));
 		}
 
-		$records = $this->db->getRecords($query);
-		$events = $this->buildEventsList($records, $StartTime, $EndTime);
-
-		usort($events, array($this, "sortByStartTime"));
 		return $events;
 	}
 
