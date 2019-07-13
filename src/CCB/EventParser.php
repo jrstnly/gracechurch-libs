@@ -71,7 +71,7 @@ class EventParser {
 		return $events;
 	}
 
-	public function getTodaysEvents($Campus = '1', $sort = "Alphabetical") {
+	public function getTodaysEvents($Campus = null, $sort = "Alphabetical") {
 		$StartTime = date_create_from_format("Y-m-d H:i:s", date("Y-m-d")." 00:00:00");
 		$EndTime = date_create_from_format("Y-m-d H:i:s", date("Y-m-d")." 23:59:59");
 		$allEvents = $this->getAllEventsInRange($StartTime, $EndTime, $Campus, $sort);
