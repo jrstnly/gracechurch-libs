@@ -31,6 +31,9 @@ class Tools {
 			case "SUCCESS":
 				$prefix = "\e[0;32m[SUCCESS]\e[0m ";
 				break;
+			case "COMPLETE":
+				$prefix = "\e[0;32m[COMPLETE]\e[0m ";
+				break;
 			case "INFO":
 				$prefix = "\e[0;34m[INFO]\e[0m ";
 				break;
