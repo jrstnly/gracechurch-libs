@@ -19,6 +19,26 @@ class Tools {
 		return $randomString;
 	}
 
+	public static function LogIt($message, $type = "INFO", $stdout = false) {
+		$prefix = "";
+		switch ($type) {
+			case "ERROR":
+				$prefix = "\e[0;31m[ERROR]\e[0m ";
+				break;
+			case "WARNING":
+				$prefix = "\e[1;33m[WARNING]\e[0m ";
+				break;
+			case "SUCCESS":
+				$prefix = "\e[0;32m[SUCCESS]\e[0m ";
+				break;
+			case "INFO":
+				$prefix = "\e[0;34m[INFO]\e[0m ";
+				break;
+		}
+		error_log($prefix.$message, 0);
+		//if ($stdout) echo $prefix.$message."\n";
+	}
+
 }
 
 ?>
