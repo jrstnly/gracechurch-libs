@@ -266,7 +266,9 @@ class CCB {
 		else return $this->get('group_profiles', $params);
 	}
 	public function get_group_profile_from_id($id, $image = false) {
-		return $this->get('group_profile_from_id', array("id"=>$id));
+		$params = ["id"=>$id];
+		if ($image) $params['include_image_link'] = 1;
+		return $this->get('group_profile_from_id', $params);
 	}
 	public function get_position_list() {
 		return $this->get('position_list');
