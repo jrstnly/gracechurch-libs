@@ -96,6 +96,7 @@ class CCB {
 	}
 	private function formatData($data) {
 		if ($this->format == 'XML' ) { return $data; }
+		if ($this->format == 'SOBJ' ) { return simplexml_load_string($data); }
 		if ($this->format == 'OBJ' ) { return $this->xml_class->createArray($data); }
 		if ($this->format == 'ARR' ) { return $this->xml2array($this->xml_class->createArray($data)); }
 		if ($this->format == 'SAR' ) { return $this->xml2array(simplexml_load_string($data)); }
