@@ -246,9 +246,10 @@ class CCB {
 	public function get_form_detail($form) {
 		return $this->get('form_detail', array('id'=>$form));
 	}
-	public function get_form_responses($id, $modified_since = null) {
+	public function get_form_responses($id, $modified_since = null, $other_params = null) {
 		$params = ['form_id'=>$id];
 		if ($modified_since != null) $params['modified_since'] = $modified_since;
+		if ($other_params) array_merge($params, $other_params);
 		return $this->get('form_responses', $params);
 	}
 	/*********************** GROUP SERVICES ************************/
