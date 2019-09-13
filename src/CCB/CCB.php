@@ -371,10 +371,10 @@ class CCB {
 		return $this->get('process_list', array('campus_id'=>$campus_id));
 	}
 	public function get_process_managers($process_id) {
-		return $this->get('event_process_managers', array('id'=>$process_id));
+		return $this->get('process_managers', array('id'=>$process_id));
 	}
 	public function get_queue_individuals($process_id) {
-		return $this->get('event_process_managers', array('id'=>$process_id));
+		return $this->get('queue_individuals', array('id'=>$process_id));
 	}
 	public function add_individual_to_queue($individual, $queue, $note = NULL) {
 		$params = ['individual_id'=>$individual, 'queue_id'=>$queue];
