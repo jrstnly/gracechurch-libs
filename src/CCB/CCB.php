@@ -503,6 +503,9 @@ class CCB {
 		$this->db->performQuery("UPDATE `ccb_attendance` SET `Individual` = '$new' WHERE `Individual` = '$old'");
 		/*** MyFit Assessments ***/
 		$this->db->performQuery("UPDATE `ccb_my_fit_submissions` SET `Individual` = '$new' WHERE `Individual` = '$old'");
+
+		/*** Big Serve Registrations ***/
+		$this->db->performQuery("UPDATE `bigserve_signups` SET `Individual` = '$new' WHERE `Individual` = '$old'");
 	}
 
 	public function remove_individual($id) {
