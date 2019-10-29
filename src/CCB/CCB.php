@@ -226,7 +226,7 @@ class CCB {
 		return $this->get('attendance_profile', array('id'=>$individual,'occurrence'=>$occurrence));
 	}
 	public function get_attendance_profiles($start_date, $end_date) {
-		return $this->get('attendance_profile', array('start_date'=>$start_date,'end_date'=>$end_date));
+		return $this->get('attendance_profiles', array('start_date'=>$start_date,'end_date'=>$end_date));
 	}
 	public function get_event_profiles($args = null) {
 		if ($args != null) return $this->get('event_profiles', $args);
