@@ -311,6 +311,8 @@ class EventParser {
 						case "third": $occurence = 3; break;
 						case "fourth": $occurence = 4; break;
 						case "fifth": $occurence = 5; break;
+						// Get number of weeks until last specified day of month
+						case "last": $occurence = ceil((int)(date_create_from_format("U", strtotime('last '.$matches2['day'][$i].' of '.$searchMonth->format('F Y')))->format("d")) / 7); break;
 					}
 
 					for ($x=1;$x<=cal_days_in_month(CAL_GREGORIAN, intval($searchMonth->format("m")), intval($searchMonth->format("Y")));$x++) {
