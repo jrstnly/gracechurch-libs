@@ -330,6 +330,12 @@ class CCB {
 	public function set_individual_fit($id, $params = []) {
 		return $this->post('update_individual_fit', $params, array('individual_id'=>$id));
 	}
+	public function get_saved_search_listing() {
+		return $this->get('search_list');
+	}
+	public function get_saved_search($id) {
+		return $this->get('execute_search', array('id'=>$id));
+	}
 	/******************** LOOKUP TABLE SERVICES ********************/
 	public function get_event_groupings() {
 		return $this->get('event_grouping_list');
