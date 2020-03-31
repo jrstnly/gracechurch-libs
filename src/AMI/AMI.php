@@ -8,11 +8,14 @@ class AMI {
 	private $timeout = 10;
 
 	public function __construct($host, $user, $pass) {
-		$this->socket = fsockopen($host,"5038", $errno, $errstr, $this->timeout);
-		fputs($this->socket, "Action: Login\r\n");
-		fputs($this->socket, "Username: $user\r\n");
-		fputs($this->socket, "Secret: $pass\r\n");
-		fputs($this->socket, "Events: off\r\n\r\n");
+		if ($this->socket = fsockopen($host,"5038", $errno, $errstr, $this->timeout)) {
+			fputs($this->socket, "Action: Login\r\n");
+			fputs($this->socket, "Username: $user\r\n");
+			fputs($this->socket, "Secret: $pass\r\n");
+			fputs($this->socket, "Events: off\r\n\r\n");
+		} else {
+			throw new \Exception($errstr, 1);
+		}
 	}
 	public function __destruct()  { fclose($this->socket); }
 
