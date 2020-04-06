@@ -17,7 +17,10 @@ class AMI {
 			throw new \Exception($errstr, 1);
 		}
 	}
-	public function __destruct()  { fclose($this->socket); }
+	public function __destruct()  {
+		sleep(1);
+		fclose($this->socket);
+	}
 
 	public function originate($from, $to, $caller_id_name, $caller_id_number) {
 		fputs($this->socket, "Action: Originate\r\n" );
