@@ -681,7 +681,7 @@ class CCB {
 		}
 		$query = "INSERT INTO ccb_group_participants (`ID`,`GroupID`,`Individual`,`ReceiveEmailFromGroup`,`ReceiveSMSFromGroup`,`Status`,`Joined`,`Updated`) VALUES";
 		foreach ($participants as $key => $participant) {
-			$individual = $participant->attributes()->id;
+			$individual = (ctype_digit($participant)) ? $participant : $participant->attributes()->id;
 			$membership_id = $group."-".$individual;
 			$query .= " ('$membership_id','$group','$individual','0','0','$status',NULL,'$updated')";
 			if ($p < ((int)$i - 1)) $query .= ",";
