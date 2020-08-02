@@ -9,6 +9,7 @@ class EventParser {
 	private $db;
 	private $am;
 	private $featured_groups;
+	private $pre_checkin_groupings;
 
 	public function __construct() {
 		$this->db = new DatabaseHandler("grace");
@@ -18,6 +19,9 @@ class EventParser {
 			26,    // All Eden Prairie Campus Attenders
 			2375,  // All Chaska Campus Attenders
 			2857   // All Online Campus Attenders
+		];
+		$this->pre_checkin_groupings = [
+			31,     // Kids Pre Check-In
 		];
 	}
 
@@ -69,6 +73,18 @@ class EventParser {
 		}
 
 		return $events;
+	}
+
+	public function getPreCheckInEvents($Campus = null, $sort = "Alphabetical") {
+		$StartTime = date_create();
+		$EndTime = date_create_from_format('Y-m-d H:i:s', date_create_from_format("U", strtotime('+6 days'))->format("Y-m-d")." 23:59:59");
+		$allEvents = $this->getAllEventsInRange($StartTime, $EndTime, $Campus, $sort, $this->pre_checkin_groupings);
+		foreach ($allEvents as $key => $event) {
+			if ($event->EndTime->format("U") < time()) {
+				unset($allEvents[$key]);
+			}
+		}
+		return array_values($allEvents);
 	}
 
 	public function getTodaysEvents($Campus = null, $sort = "Alphabetical") {
