@@ -152,7 +152,7 @@ class EventParser {
 				$event->Name = $ev['Name'];
 				$event->Campus = $group['Campus'];
 				$event->CampusName = $group['CampusName'];
-				$event->CheckedIn = null;
+				$event->CheckedInCount = null;
 				$event->Group = $group['ID'];
 				$event->GroupName = $group['Name'];
 				$event->GroupType = $group['TypeName'];
@@ -164,7 +164,7 @@ class EventParser {
 				$event->Description = $ev['Description'];
 				$event->Organizer = $ev['Organizer'];
 				$event->Location = (object)["Name"=>$ev['LocationName'],"StreetAddress"=>$ev['StreetAddress'],"City"=>$ev['City'],"State"=>$ev['State'],"Zip"=>$ev['Zip']];
-				$event->PreCheckedIn = null;
+				$event->PreCheckedInCount = null;
 				$event->Tags = $ev['Tags'];
 
 				$occurrences = $this->findAllOccurances($StartTime, $EndTime, $event, $ev['Recurrence'], date_create_from_format("Y-m-d H:i:s", $ev['AbsoluteEnd']));

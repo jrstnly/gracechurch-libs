@@ -28,7 +28,7 @@ class CalendarEvent implements \JsonSerializable {
 			'AttendeeLimit' => $this->AttendeeLimit,
 			'Campus' => $this->Campus,
 			'CampusName' => $this->CampusName,
-			'CheckedIn' => $this->CheckedIn,
+			'CheckedInCount' => $this->CheckedIn,
 			'Group' => $this->Group,
 			'GroupName' => $this->GroupName,
 			'GroupType' => $this->GroupType,
@@ -39,7 +39,7 @@ class CalendarEvent implements \JsonSerializable {
 			'Exceptions' => $this->Exceptions,
 			'Organizer' => $this->Organizer,
 			'Location' => $this->Location,
-			'PreCheckedIn' => $this->PreCheckedIn,
+			'PreCheckedInCount' => $this->PreCheckedIn,
 			'Tags' => $this->Tags
 		];
 	}
