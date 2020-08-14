@@ -505,8 +505,15 @@ class CCB {
 	}
 
 	public function migrate_data($old, $new) {
+		$new_individual = $this->db->getOneRecord("SELECT * FROM `ccb_individuals` WHERE `ID` = '$new'");
+		$family = $new_individual['Family'];
+
 		/*** Attendance Records ***/
 		$this->db->performQuery("UPDATE `ccb_attendance` SET `Individual` = '$new' WHERE `Individual` = '$old'");
+		/*** Attendance Holding Records ***/
+		$this->db->performQuery("UPDATE `ccb_attendance_holding` SET `Individual` = '$new', `Family` = '$family' WHERE `Individual` = '$old'");
+		$this->db->performQuery("UPDATE `ccb_attendance_holding` SET `SubmittedBy` = '$new' WHERE `SubmittedBy` = '$old'");
+
 		/*** MyFit Assessments ***/
 		$this->db->performQuery("UPDATE `ccb_my_fit_submissions` SET `Individual` = '$new' WHERE `Individual` = '$old'");
 
