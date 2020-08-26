@@ -330,6 +330,12 @@ class CCB {
 	public function set_individual_fit($id, $params = []) {
 		return $this->post('update_individual_fit', $params, array('individual_id'=>$id));
 	}
+	public function get_saved_search_listing() {
+		return $this->get('search_list');
+	}
+	public function get_saved_search($id) {
+		return $this->get('execute_search', array('id'=>$id));
+	}
 	/******************** LOOKUP TABLE SERVICES ********************/
 	public function get_event_groupings() {
 		return $this->get('event_grouping_list');
@@ -499,8 +505,15 @@ class CCB {
 	}
 
 	public function migrate_data($old, $new) {
+		$new_individual = $this->db->getOneRecord("SELECT * FROM `ccb_individuals` WHERE `ID` = '$new'");
+		$family = $new_individual['Family'];
+
 		/*** Attendance Records ***/
 		$this->db->performQuery("UPDATE `ccb_attendance` SET `Individual` = '$new' WHERE `Individual` = '$old'");
+		/*** Attendance Holding Records ***/
+		$this->db->performQuery("UPDATE `ccb_attendance_holding` SET `Individual` = '$new', `Family` = '$family' WHERE `Individual` = '$old'");
+		$this->db->performQuery("UPDATE `ccb_attendance_holding` SET `SubmittedBy` = '$new' WHERE `SubmittedBy` = '$old'");
+
 		/*** MyFit Assessments ***/
 		$this->db->performQuery("UPDATE `ccb_my_fit_submissions` SET `Individual` = '$new' WHERE `Individual` = '$old'");
 
@@ -675,7 +688,7 @@ class CCB {
 		}
 		$query = "INSERT INTO ccb_group_participants (`ID`,`GroupID`,`Individual`,`ReceiveEmailFromGroup`,`ReceiveSMSFromGroup`,`Status`,`Joined`,`Updated`) VALUES";
 		foreach ($participants as $key => $participant) {
-			$individual = $participant->attributes()->id;
+			$individual = (ctype_digit($participant)) ? $participant : $participant->attributes()->id;
 			$membership_id = $group."-".$individual;
 			$query .= " ('$membership_id','$group','$individual','0','0','$status',NULL,'$updated')";
 			if ($p < ((int)$i - 1)) $query .= ",";

@@ -9,6 +9,7 @@ class EventParser {
 	private $db;
 	private $am;
 	private $featured_groups;
+	private $pre_checkin_groupings;
 
 	public function __construct() {
 		$this->db = new DatabaseHandler("grace");
@@ -18,6 +19,9 @@ class EventParser {
 			26,    // All Eden Prairie Campus Attenders
 			2375,  // All Chaska Campus Attenders
 			2857   // All Online Campus Attenders
+		];
+		$this->pre_checkin_groupings = [
+			31,     // Kids Pre Check-In
 		];
 	}
 
@@ -89,6 +93,18 @@ class EventParser {
 		return $events;
 	}
 
+	public function getPreCheckInEvents($Campus = null, $sort = "Alphabetical") {
+		$StartTime = date_create();
+		$EndTime = date_create_from_format('Y-m-d H:i:s', date_create_from_format("U", strtotime('+6 days'))->format("Y-m-d")." 23:59:59");
+		$allEvents = $this->getAllEventsInRange($StartTime, $EndTime, $Campus, $sort, $this->pre_checkin_groupings);
+		foreach ($allEvents as $key => $event) {
+			if ($event->EndTime->format("U") < time()) {
+				unset($allEvents[$key]);
+			}
+		}
+		return array_values($allEvents);
+	}
+
 	public function getTodaysEvents($Campus = null, $sort = "Alphabetical") {
 		$StartTime = date_create_from_format("Y-m-d H:i:s", date("Y-m-d")." 00:00:00");
 		$EndTime = date_create_from_format("Y-m-d H:i:s", date("Y-m-d")." 23:59:59");
@@ -150,9 +166,11 @@ class EventParser {
 				$event->Occurrence = date_create_from_format("Y-m-d H:i:s", $ev['StartTime']);
 				$event->Recurrence = $ev['Recurrence'];
 				$event->Resources = $ev['Resources'];
+				$event->AttendeeLimit = $ev['AttendeeLimit'];
 				$event->Name = $ev['Name'];
 				$event->Campus = $group['Campus'];
 				$event->CampusName = $group['CampusName'];
+				$event->CheckedInCount = null;
 				$event->Group = $group['ID'];
 				$event->GroupName = $group['Name'];
 				$event->GroupType = $group['TypeName'];
@@ -164,6 +182,7 @@ class EventParser {
 				$event->Description = $ev['Description'];
 				$event->Organizer = $ev['Organizer'];
 				$event->Location = (object)["Name"=>$ev['LocationName'],"StreetAddress"=>$ev['StreetAddress'],"City"=>$ev['City'],"State"=>$ev['State'],"Zip"=>$ev['Zip']];
+				$event->PreCheckedInCount = null;
 				$event->Tags = $ev['Tags'];
 
 				$occurrences = $this->findAllOccurances($StartTime, $EndTime, $event, $ev['Recurrence'], date_create_from_format("Y-m-d H:i:s", $ev['AbsoluteEnd']));
@@ -329,6 +348,8 @@ class EventParser {
 						case "third": $occurence = 3; break;
 						case "fourth": $occurence = 4; break;
 						case "fifth": $occurence = 5; break;
+						// Get number of weeks until last specified day of month
+						case "last": $occurence = ceil((int)(date_create_from_format("U", strtotime('last '.$matches2['day'][$i].' of '.$searchMonth->format('F Y')))->format("d")) / 7); break;
 					}
 
 					for ($x=1;$x<=cal_days_in_month(CAL_GREGORIAN, intval($searchMonth->format("m")), intval($searchMonth->format("Y")));$x++) {
