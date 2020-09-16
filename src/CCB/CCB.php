@@ -361,6 +361,9 @@ class CCB {
 	public function get_mobile_carriers() {
 		return $this->get('mobile_carrier_list');
 	}
+	public function get_school_list() {
+		return $this->get('school_list');
+	}
 	public function get_gift_list() {
 		return $this->get('gift_list');
 	}
@@ -372,6 +375,10 @@ class CCB {
 	}
 	public function get_personality_list() {
 		return $this->get('style_list');
+	}
+	public function get_individual_udf_list($type, $num) {
+		// Types: pulldown
+		return $this->get('udf_ind_'.$type.'_'.$num.'_list');
 	}
 	/******************** PROCESS SERVICES ********************/
 	public function get_process_list($campus_id) {
