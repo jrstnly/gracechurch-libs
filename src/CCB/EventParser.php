@@ -52,7 +52,7 @@ class EventParser {
 
 	public function getEventsByUser($uid, $StartTime, $EndTime, $StartOffset = null, $Grouping = null, $sort = true) {
 		$events = [];
-		$groups = $this->db->getRecords("SELECT GroupID FROM ccb_group_participants WHERE Individual = '$uid'");
+		$groups = $this->db->getRecords("SELECT `GroupID` FROM `ccb_group_participants` WHERE `Individual` = '$uid'");
 		$query = "SELECT * FROM `ccb_events` WHERE `StartTime` < '".$EndTime->format("Y-m-d H:i:s")."' AND `AbsoluteEnd` > '".$StartTime->format("Y-m-d H:i:s")."'";
 		if ($StartOffset != null) {
 			$NewStart = clone $StartTime;
@@ -61,33 +61,44 @@ class EventParser {
 		}
 
 		if ($groups != null && count($groups) > 0) {
-			$query .= " AND ";
-			$query .= "(";
+			$has_groups = false;
+			$group_ids = "";
+
 			foreach ($groups as $key => $value) {
 				$group_id = $value['GroupID'];
 				if (!in_array($group_id, $this->featured_groups)) {
-					if ($key == (count($groups) - 1)) $query .= "`GroupID` = '$group_id'";
-					else $query .= "`GroupID` = '$group_id' OR ";
+					$has_groups = true;
+					if ($key == (count($groups) - 1)) $group_ids .= "`GroupID` = '$group_id'";
+					else $group_ids .= "`GroupID` = '$group_id' OR ";
 				}
 			}
-			$query .= ")";
 
-			if ($Grouping != null && $Grouping != "") {
+			if ($has_groups) {
 				$query .= " AND ";
-				if (is_array($Grouping)) {
-					foreach ($Grouping as $key => $value) {
-						if ($key == (count($Grouping) - 1)) $query .= "`Grouping` = '$value'";
-						else $query .= "`Grouping` = '$value' OR ";
+				$query .= "(";
+				$query .= $group_ids;
+				$query .= ")";
+
+				if ($Grouping != null && $Grouping != "") {
+					$query .= " AND ";
+					if (is_array($Grouping)) {
+						foreach ($Grouping as $key => $value) {
+							if ($key == (count($Grouping) - 1)) $query .= "`Grouping` = '$value'";
+							else $query .= "`Grouping` = '$value' OR ";
+						}
+					} else {
+						$query .= "`Grouping` = '$Grouping'";
 					}
-				} else {
-					$query .= "`Grouping` = '$Grouping'";
 				}
-			}
 
 			$records = $this->db->getRecords($query);
 			$events = $this->buildEventsList($records, $StartTime, $EndTime);
 
-			usort($events, array($this, "sortByStartTime"));
+				$records = $this->db->getRecords($query);
+				$events = $this->buildEventsList($records, $StartTime, $EndTime);
+
+				usort($events, array($this, "sortByStartTime"));
+			}
 		}
 
 		return $events;
