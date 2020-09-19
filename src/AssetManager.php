@@ -36,11 +36,9 @@ class AssetManager {
 			if (file_exists($this->root.$file)) {
 				$fid = $this->getByLocation($file);
 				$this->registerCDNAsset($fid, $file, $filename, $type);
-				echo "File exists: ".$fid."\n";
 				return $fid;
 			} else {
 				/* Move file to proper storage location and register asset */
-				echo "Saving file";
 				if (copy($temp, $this->root.$file)) {
 					$fid = $this->register($filename, $file, $type, $parent);
 					$this->registerCDNAsset($fid, $file, $filename, $type);
