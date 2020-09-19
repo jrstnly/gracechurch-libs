@@ -34,11 +34,16 @@ class AssetManager {
 
 			/* Deduplication */
 			if (file_exists($this->root.$file)) {
-				return $this->getByLocation($file);
+				$fid = $this->getByLocation($file);
+				$this->registerCDNAsset($fid, $file, $filename, $type);
+				echo "File exists: ".$fid."\n";
+				return $fid;
 			} else {
 				/* Move file to proper storage location and register asset */
+				echo "Saving file";
 				if (copy($temp, $this->root.$file)) {
 					$fid = $this->register($filename, $file, $type, $parent);
+					$this->registerCDNAsset($fid, $file, $filename, $type);
 					return $fid;
 				} else {
 					return false;
@@ -84,6 +89,12 @@ class AssetManager {
 		$column_names = array('id', 'filename', 'file', 'parent', 'type', 'registered');
 		$result = $this->db->insertIntoTable($data, $column_names, $table_name);
 		return $id;
+	}
+	public function registerCDNAsset($id, $file, $filename, $type) {
+		$query = "INSERT INTO `asset_files_cdn` (`ID`,`File`,`Filename`,`Type`)
+					VALUES ('$id','$file','$filename','$type')
+					ON DUPLICATE KEY UPDATE `File`='$file', `Filename`='$filename', `Type`='$type';";
+		$this->db->performQuery($query);
 	}
 
 	public function upload($filename, $temp, $args = null) {
