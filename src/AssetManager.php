@@ -118,7 +118,7 @@ class AssetManager {
 		if ($cdn && $cdn['StoragePublicUrl']) {
 			return $cdn['StoragePublicUrl'];
 		} else {
-			return "https://assets.grace.church/?avatar&key=".$this->getAccessKey($fid);
+			return "https://assets.grace.church/?key=".$this->getAccessKey($fid);
 		}
 	}
 
