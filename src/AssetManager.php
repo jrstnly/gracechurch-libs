@@ -113,6 +113,15 @@ class AssetManager {
 		}
 	}
 
+	public function getPublicUrl($fid) {
+		$cdn = $this->db->getOneRecord("SELECT * FROM `asset_files_cdn` WHERE `ID` = '$fid'");
+		if ($cdn && $cdn['StoragePublicUrl']) {
+			return $cdn['StoragePublicUrl'];
+		} else {
+			return "https://assets.grace.church/?avatar&key=".$this->getAccessKey($fid);
+		}
+	}
+
 	public function getFile($fid) {
 		$filename = $this->db->getOneRecord("SELECT file FROM asset_files WHERE id = '$fid'");
 		$file = $this->root.$filename['file'];
