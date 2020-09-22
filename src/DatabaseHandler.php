@@ -33,7 +33,7 @@ class DatabaseHandler {
 
 	public function sanitize($input) {
 		if (!$this->conn->ping()) $this->reconnect();
-		return $this->conn->real_escape_string($input);
+		return $this->conn->real_escape_string(trim($input));
 	}
 
 	public function getOneRecord($query) {
