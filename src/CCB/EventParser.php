@@ -169,7 +169,7 @@ class EventParser {
 			if ($group['Inactive'] == '0' && ($Campus == null || $Campus == false || $group['Campus'] == $Campus)) {
 				$event = new CalendarEvent();
 				$event->ID = $ev['ID'];
-				$event->Image = ($ev['Image'] != "") ? $this->am->getAccessKey($ev['Image']) : "";
+				$event->Image = ($ev['Image'] != "") ? $this->am->getPublicUrl($ev['Image']) : "";
 				$event->StartTime = date_create_from_format("Y-m-d H:i:s",$ev['StartTime']);
 				$event->EndTime = date_create_from_format("Y-m-d H:i:s",$ev['EndTime']);
 				//$event->SetupStart = date_create_from_format("Y-m-d H:i:s",$ev['SetupStart']);
