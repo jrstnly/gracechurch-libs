@@ -13,7 +13,7 @@ class DatabaseHandler {
 
 	public function connect() {
 		// Connect to mysql database
-		$this->conn = new \mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, $this->database);
+		$this->conn = new \mysqli('p:'.DB_HOST, DB_USERNAME, DB_PASSWORD, $this->database);
 		// Check for database connection error
 		if ($this->conn->connect_errno) {
 			echo "Failed to connect to MySQL: " . $this->conn->connect_error;
