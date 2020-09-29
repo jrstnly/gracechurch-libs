@@ -10,6 +10,9 @@ class DatabaseHandler {
 		$this->database = $db_name;
 		$this->connect();
 	}
+	function __destruct() {
+		$this->conn->close();
+	}
 
 	public function connect() {
 		// Connect to mysql database
