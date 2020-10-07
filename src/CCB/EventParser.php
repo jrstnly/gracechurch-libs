@@ -53,52 +53,45 @@ class EventParser {
 	public function getEventsByUser($uid, $StartTime, $EndTime, $StartOffset = null, $Grouping = null, $sort = true) {
 		$events = [];
 		$groups = $this->db->getRecords("SELECT `GroupID` FROM `ccb_group_participants` WHERE `Individual` = '$uid'");
+		$groups = array_map(function($item) {
+			return intval($item['GroupID']);
+		}, $groups);
+		$groups = array_diff($groups, $this->featured_groups);
+		$groups = array_values($groups);
 		$query = "SELECT * FROM `ccb_events` WHERE `StartTime` < '".$EndTime->format("Y-m-d H:i:s")."' AND `AbsoluteEnd` > '".$StartTime->format("Y-m-d H:i:s")."'";
 		if ($StartOffset != null) {
 			$NewStart = clone $StartTime;
 			$NewStart->add($StartOffset);
-			$query = "SELECT * FROM `ccb_events` WHERE `StartTime` < '".$NewStart->format("Y-m-d H:i:s")."' AND `StartTime` < '".$EndTime->format("Y-m-d H:i:s")."' AND `AbsoluteEnd` > '".$StartTime->format("Y-m-d H:i:s")."'";
+			$query = "SELECT * FROM `ccb_events` WHERE `StartTime` < '".$NewStart->format("Y-m-d H:i:s")."' AND `AbsoluteEnd` > '".$StartTime->format("Y-m-d H:i:s")."'";
 		}
 
 		if ($groups != null && count($groups) > 0) {
-			$has_groups = false;
-			$group_ids = "";
+			$query .= " AND ";
+			$query .= "(";
 
-			foreach ($groups as $key => $value) {
-				$group_id = $value['GroupID'];
-				if (!in_array($group_id, $this->featured_groups)) {
-					$has_groups = true;
-					if ($key == (count($groups) - 1)) $group_ids .= "`GroupID` = '$group_id'";
-					else $group_ids .= "`GroupID` = '$group_id' OR ";
-				}
+			foreach ($groups as $key => $group_id) {
+				$query .= "`GroupID` = '$group_id'";
+				if ($key < (count($groups) - 1)) $query .= " OR ";
 			}
 
-			if ($has_groups) {
-				$query .= " AND ";
-				$query .= "(";
-				$query .= $group_ids;
-				$query .= ")";
+			$query .= ")";
 
-				if ($Grouping != null && $Grouping != "") {
-					$query .= " AND ";
-					if (is_array($Grouping)) {
-						foreach ($Grouping as $key => $value) {
-							if ($key == (count($Grouping) - 1)) $query .= "`Grouping` = '$value'";
-							else $query .= "`Grouping` = '$value' OR ";
-						}
-					} else {
-						$query .= "`Grouping` = '$Grouping'";
+			if ($Grouping != null && $Grouping != "") {
+				$query .= " AND ";
+				if (is_array($Grouping)) {
+					foreach ($Grouping as $key => $value) {
+						if ($key == (count($Grouping) - 1)) $query .= "`Grouping` = '$value'";
+						else $query .= "`Grouping` = '$value' OR ";
 					}
+				} else {
+					$query .= "`Grouping` = '$Grouping'";
 				}
+			}
 
 			$records = $this->db->getRecords($query);
 			$events = $this->buildEventsList($records, $StartTime, $EndTime);
 
-				$records = $this->db->getRecords($query);
-				$events = $this->buildEventsList($records, $StartTime, $EndTime);
-
-				usort($events, array($this, "sortByStartTime"));
-			}
+			usort($events, array($this, "sortByStartTime"));
 		}
 
 		return $events;
