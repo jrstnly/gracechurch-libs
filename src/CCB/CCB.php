@@ -512,13 +512,15 @@ class CCB {
 	}
 
 	public function migrate_data($old, $new) {
+		$new_id = $old."-".$new;
+		$this->db->performQuery("INSERT INTO `ccb_individuals_merged` (`ID`, `Old`, `New`) VALUES('$new_id', '$old', '$new') ON DUPLICATE KEY UPDATE `Old`='$old', `New`='$new'");
 		$new_individual = $this->db->getOneRecord("SELECT * FROM `ccb_individuals` WHERE `ID` = '$new'");
 		$family = $new_individual['Family'];
 
 		/*** Attendance Records ***/
 		$this->db->performQuery("UPDATE `ccb_attendance` SET `Individual` = '$new' WHERE `Individual` = '$old'");
 		/*** Attendance Holding Records ***/
-		$this->db->performQuery("UPDATE `ccb_attendance_holding` SET `Individual` = '$new', `Family` = '$family' WHERE `Individual` = '$old'");
+		if ($family) $this->db->performQuery("UPDATE `ccb_attendance_holding` SET `Individual` = '$new', `Family` = '$family' WHERE `Individual` = '$old'");
 		$this->db->performQuery("UPDATE `ccb_attendance_holding` SET `SubmittedBy` = '$new' WHERE `SubmittedBy` = '$old'");
 
 		/*** MyFit Assessments ***/
