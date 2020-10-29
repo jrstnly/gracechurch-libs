@@ -6,6 +6,7 @@ use GraceChurch\DatabaseHandler;
 use GraceChurch\AssetManager;
 
 class EventParser {
+	//// TODO: Update all time functions to utilize PHP DtaeTime class
 	private $db;
 	private $am;
 	private $featured_groups;
@@ -98,8 +99,9 @@ class EventParser {
 	}
 
 	public function getPreCheckInEvents($Campus = null, $sort = "Alphabetical") {
-		$StartTime = date_create();
-		$EndTime = date_create_from_format('Y-m-d H:i:s', date_create_from_format("U", strtotime('+6 days'))->format("Y-m-d")." 23:59:59");
+		$StartTime = new \DateTime("now");
+		$EndTime = (new \DateTime())->setTime(0,0);
+		$EndTime->add(new \DateInterval('P7D'));
 		$allEvents = $this->getAllEventsInRange($StartTime, $EndTime, $Campus, $sort, $this->pre_checkin_groupings);
 		foreach ($allEvents as $key => $event) {
 			if ($event->EndTime->format("U") < time()) {
