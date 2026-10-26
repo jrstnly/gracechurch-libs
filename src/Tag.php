@@ -93,6 +93,9 @@ class Tag {
 	public function addEvent($first_name, $last_name, $event) {
 		array_push($this->tags, array("type"=>"event","first_name"=>$first_name,"last_name"=>$last_name,"event"=>$event));
 	}
+	public function addQr($first_name, $last_name, $data, $group = "") {
+		array_push($this->tags, array("type"=>"qr","first_name"=>$first_name,"last_name"=>$last_name,"data"=>$data,"group"=>$group));
+	}
 	public function addSecurity($first_name, $last_name, $code, $event, $group, $allergies, $young) {
 		array_push($this->tags, array("type"=>"security","first_name"=>$first_name,"last_name"=>$last_name,"code"=>$code,"event"=>$event,"group"=>$group,"allergies"=>$allergies));
 		if ($young) array_push($this->tags, array("type"=>"security","first_name"=>$first_name,"last_name"=>$last_name,"code"=>$code,"event"=>$event,"group"=>$group,"allergies"=>$allergies));
@@ -147,6 +150,7 @@ class Tag {
 
 			if ($tag["type"] == "name")     { $this->generate_name($tag['first_name'], $tag['last_name'], $last); }
 			if ($tag["type"] == "event")    { $this->generate_event($tag['first_name'], $tag['last_name'], $tag['event'], $last); }
+			if ($tag["type"] == "qr")       { $this->generate_qr($tag['first_name'], $tag['last_name'], $tag['data'], $tag['group'], $last); }
 			if ($tag["type"] == "security") { $this->generate_security($tag['first_name'], $tag['last_name'], $tag['code'], $tag['event'], $tag['group'], $tag['allergies'], $last); }
 			if ($tag["type"] == "pickup")   { $this->generate_pickup($tag['code'], $last); }
 		}
@@ -169,6 +173,18 @@ class Tag {
 		$this->label->addElement(new ZebraText(1, 240, $last_name, 22));
 		$this->label->addElement(new ZebraNativeZpl("^FB603,1,0,C,0\n"));
 		$this->label->addElement(new ZebraText(20, 360, $event, 9));
+		if (!$last) $this->label->addElement(new ZebraNativeZpl("^XB\n"));
+		$this->label->addElement(new ZebraNativeZpl("^XZ\n"));
+	}
+	private function generate_qr($first_name, $last_name, $data, $group = "", $last = true) {
+		$this->label->addElement(new ZebraNativeZpl("^XA\n"));
+		$this->label->addElement(new ZebraQrCode(200, 295, "id".$data, 10));
+		$this->label->addElement(new ZebraNativeZpl("^FB603,1,0,C,0\n"));
+		$this->label->addElement(new ZebraText(1, 335, $first_name." ".$last_name, 8));
+		if ($group && $group != "") {
+			$this->label->addElement(new ZebraNativeZpl("^FB603,1,0,C,0\n"));
+			$this->label->addElement(new ZebraText(1, 375, $group, 6));
+		}
 		if (!$last) $this->label->addElement(new ZebraNativeZpl("^XB\n"));
 		$this->label->addElement(new ZebraNativeZpl("^XZ\n"));
 	}
